@@ -7,7 +7,7 @@ import { Answer } from '../../models/answer.model';
   providedIn: 'root'
 })
 export class AnswersService {
-  private readonly API_URL = 'http://localhost:3000/api';
+  private readonly API_URL = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 

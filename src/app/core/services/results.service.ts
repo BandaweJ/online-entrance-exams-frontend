@@ -7,7 +7,7 @@ import { Result } from '../../models/result.model';
   providedIn: 'root'
 })
 export class ResultsService {
-  private readonly API_URL = 'http://localhost:3000/api';
+  private readonly API_URL = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 

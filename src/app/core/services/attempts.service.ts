@@ -7,7 +7,7 @@ import { ExamAttempt, CreateAttemptRequest, UpdateAttemptRequest } from '../../m
   providedIn: 'root'
 })
 export class AttemptsService {
-  private readonly API_URL = 'http://localhost:3000/api';
+  private readonly API_URL = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
