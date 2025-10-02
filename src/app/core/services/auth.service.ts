@@ -9,6 +9,7 @@ import { LoginRequest, LoginResponse, RegisterRequest } from '../../models/auth.
 import { AppState } from '../store/app.reducer';
 import * as AuthActions from '../store/auth/auth.actions';
 import * as ExamActions from '../store/exam/exam.actions';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'

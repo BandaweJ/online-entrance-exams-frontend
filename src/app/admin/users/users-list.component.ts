@@ -37,8 +37,7 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
     MatProgressSpinnerModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule,
-    ConfirmDialogComponent
+    MatSelectModule
   ],
   template: `
     <div class="users-container">
