@@ -812,10 +812,24 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
           const sessionTimeSpent = Math.floor((now.getTime() - this.resumeTime.getTime()) / 1000);
           const previouslySpentTime = this.attempt.timeSpent || 0;
           timeSpent = previouslySpentTime + sessionTimeSpent;
+          
+          console.log('Updating time spent (resumed):', {
+            sessionTimeSpent,
+            previouslySpentTime,
+            totalTimeSpent: timeSpent,
+            resumeTime: this.resumeTime,
+            now: now
+          });
         } else {
           // Fresh exam start - calculate from original start time
           const startTime = new Date(this.attempt.startedAt);
           timeSpent = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+          
+          console.log('Updating time spent (fresh):', {
+            timeSpent,
+            startTime: startTime,
+            now: now
+          });
         }
       }
       
@@ -938,6 +952,12 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
     if (this.attempt) {
       // Set resume time for proper time tracking
       this.resumeTime = new Date();
+      
+      console.log('Resuming exam:', {
+        attemptId: this.attempt.id,
+        currentTimeSpent: this.attempt.timeSpent,
+        resumeTime: this.resumeTime
+      });
       
       // If offline, just update local state
       if (!this.isOnline) {

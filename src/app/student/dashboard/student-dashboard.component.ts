@@ -815,43 +815,33 @@ export class StudentDashboardComponent implements OnInit {
   }
 
   viewResult(attempt: ExamAttempt) {
+    console.log('Viewing result for attempt:', attempt.id);
     
     // First, try to find the result for this attempt
     const existingResult = this.results.find(result => result.attemptId === attempt.id);
     
     if (existingResult) {
+      console.log('Found existing result:', existingResult.id);
       // Navigate to existing result
       this.router.navigate(['/student/results', existingResult.id]);
     } else {
-      // Try to generate result first, then navigate
-      this.resultsService.generateResult(attempt.id).subscribe({
-        next: (result: Result) => {
-          this.results.push(result);
-          this.router.navigate(['/student/results', result.id]);
+      console.log('No existing result found, refreshing results...');
+      // Refresh results to get the latest data
+      this.resultsService.getStudentResults().subscribe({
+        next: (results: Result[]) => {
+          this.results = results;
+          const foundResult = results.find(result => result.attemptId === attempt.id);
+          if (foundResult) {
+            console.log('Found result after refresh:', foundResult.id);
+            this.router.navigate(['/student/results', foundResult.id]);
+          } else {
+            console.error('Result still not found after refresh');
+            alert('Result not found. The exam may still be processing. Please try again in a few moments.');
+          }
         },
         error: (error) => {
-          console.error('Error generating result:', error);
-          
-          // If the error is "already graded", try to refresh results and find the existing one
-          if (error.error?.message === 'Exam has already been graded') {
-            this.resultsService.getStudentResults().subscribe({
-              next: (results: Result[]) => {
-                this.results = results;
-                const foundResult = results.find(result => result.attemptId === attempt.id);
-                if (foundResult) {
-                  this.router.navigate(['/student/results', foundResult.id]);
-                } else {
-                  alert('Result not found. Please try refreshing the page.');
-                }
-              },
-              error: (refreshError) => {
-                console.error('Error refreshing results:', refreshError);
-                alert('Unable to load results. Please try refreshing the page.');
-              }
-            });
-          } else {
-            alert('Unable to generate result. Please try again later.');
-          }
+          console.error('Error refreshing results:', error);
+          alert('Error loading results. Please try again.');
         }
       });
     }
