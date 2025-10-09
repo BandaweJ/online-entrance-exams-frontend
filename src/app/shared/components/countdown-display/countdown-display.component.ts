@@ -23,17 +23,7 @@ import { CountdownService } from '../../services/countdown.service';
             <div class="time-display">{{ formattedTime }}</div>
             <div class="time-label">{{ timeLabel }}</div>
           </div>
-          <div class="countdown-actions" *ngIf="showControls">
-            <button mat-icon-button (click)="pauseTimer()" *ngIf="!isPaused">
-              <mat-icon>pause</mat-icon>
-            </button>
-            <button mat-icon-button (click)="resumeTimer()" *ngIf="isPaused">
-              <mat-icon>play_arrow</mat-icon>
-            </button>
-            <button mat-icon-button (click)="stopTimer()">
-              <mat-icon>stop</mat-icon>
-            </button>
-          </div>
+          <!-- Timer controls removed - managed by exam container -->
         </div>
       </mat-card-content>
     </mat-card>
@@ -83,36 +73,11 @@ import { CountdownService } from '../../services/countdown.service';
       color: #666;
       margin-top: 4px;
     }
-
-    .countdown-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .countdown-actions button {
-      color: #1976d2;
-    }
-
-    .countdown-card.warning .time-display,
-    .countdown-card.warning .countdown-icon,
-    .countdown-card.warning .countdown-actions button {
-      color: #ff9800;
-    }
-
-    .countdown-card.danger .time-display,
-    .countdown-card.danger .countdown-icon,
-    .countdown-card.danger .countdown-actions button {
-      color: #f44336;
-    }
   `]
 })
 export class CountdownDisplayComponent implements OnInit, OnDestroy {
   @Input() endTime: string = '';
-  @Input() showControls: boolean = true;
   @Input() onTimeUp?: () => void;
-  @Input() onPause?: () => void;
-  @Input() onResume?: () => void;
-  @Input() onStop?: () => void;
 
   formattedTime: string = '00:00:00';
   timeLabel: string = 'Time Remaining';
@@ -189,33 +154,5 @@ export class CountdownDisplayComponent implements OnInit, OnDestroy {
     }
   }
 
-  pauseTimer() {
-    this.isPaused = true;
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = undefined;
-    }
-    if (this.onPause) {
-      this.onPause();
-    }
-  }
-
-  resumeTimer() {
-    this.isPaused = false;
-    this.startCountdown();
-    if (this.onResume) {
-      this.onResume();
-    }
-  }
-
-  stopTimer() {
-    this.isPaused = true;
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = undefined;
-    }
-    if (this.onStop) {
-      this.onStop();
-    }
-  }
+  // Timer control methods removed - managed by exam container
 }

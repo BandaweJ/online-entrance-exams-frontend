@@ -19,7 +19,8 @@ import { Exam, Question, Section } from '../../models/exam.model';
 import { ExamAttempt, CreateAttemptRequest } from '../../models/attempt.model';
 import { Answer } from '../../models/answer.model';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
-import { interval, Subscription } from 'rxjs';
+import { interval, Subscription, fromEvent, merge } from 'rxjs';
+import { map, filter, debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'app-exam-container',
@@ -616,6 +617,10 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   flaggedQuestions = new Set<number>();
   answers: Map<string, Answer> = new Map();
   private timeUpdateSubscription?: Subscription;
+  private networkSubscription?: Subscription;
+  private timerSyncSubscription?: Subscription;
+  private isOnline = navigator.onLine;
+  private wasPausedByNetwork = false;
   private autoSaveTimeout: any;
   isSubmitting = false;
   isMobile = false;
@@ -635,6 +640,9 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
     // Mobile detection
     this.checkScreenSize();
     window.addEventListener('resize', () => this.checkScreenSize());
+    
+    // Network monitoring
+    this.setupNetworkMonitoring();
     
     const examId = this.route.snapshot.paramMap.get('id');
     const attemptId = this.route.snapshot.paramMap.get('attemptId');
@@ -658,6 +666,12 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
     if (this.timeUpdateSubscription) {
       this.timeUpdateSubscription.unsubscribe();
     }
+    if (this.networkSubscription) {
+      this.networkSubscription.unsubscribe();
+    }
+    if (this.timerSyncSubscription) {
+      this.timerSyncSubscription.unsubscribe();
+    }
   }
 
   private loadExamData(examId: string, attemptId: string) {
@@ -673,6 +687,7 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
             this.attempt = attempt;
             this.loadExistingAnswers();
             this.startTimeTracking();
+            this.startTimerSynchronization();
           },
           error: (error) => {
             console.error('Error loading attempt:', error);
@@ -756,6 +771,7 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
         this.attempt = attempt;
         this.loadExistingAnswers();
         this.startTimeTracking();
+        this.startTimerSynchronization();
       },
       error: (error) => {
         console.error('Error creating attempt:', error);
@@ -877,6 +893,13 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
 
   pauseExam() {
     if (this.attempt) {
+      // If offline, just update local state
+      if (!this.isOnline) {
+        this.attempt.status = 'paused';
+        this.snackBar.open('Exam paused (offline)', 'Close', { duration: 3000 });
+        return;
+      }
+
       this.attemptsService.pauseAttempt(this.attempt.id).subscribe({
         next: () => {
           this.attempt!.status = 'paused';
@@ -884,7 +907,9 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
         },
         error: (error: any) => {
           console.error('Error pausing exam:', error);
-          this.snackBar.open('Error pausing exam', 'Close', { duration: 3000 });
+          // If network error, still pause locally
+          this.attempt!.status = 'paused';
+          this.snackBar.open('Exam paused (offline)', 'Close', { duration: 3000 });
         }
       });
     }
@@ -892,6 +917,13 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
 
   resumeExam() {
     if (this.attempt) {
+      // If offline, just update local state
+      if (!this.isOnline) {
+        this.attempt.status = 'in_progress';
+        this.snackBar.open('Exam resumed (offline)', 'Close', { duration: 3000 });
+        return;
+      }
+
       this.attemptsService.resumeAttempt(this.attempt.id).subscribe({
         next: () => {
           this.attempt!.status = 'in_progress';
@@ -899,7 +931,9 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
         },
         error: (error: any) => {
           console.error('Error resuming exam:', error);
-          this.snackBar.open('Error resuming exam', 'Close', { duration: 3000 });
+          // If network error, still resume locally
+          this.attempt!.status = 'in_progress';
+          this.snackBar.open('Exam resumed (offline)', 'Close', { duration: 3000 });
         }
       });
     }
@@ -1056,5 +1090,75 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
       }
     }
     return '';
+  }
+
+  // Network monitoring and timer synchronization methods
+  private setupNetworkMonitoring() {
+    // Monitor online/offline events
+    const online$ = fromEvent(window, 'online').pipe(map(() => true));
+    const offline$ = fromEvent(window, 'offline').pipe(map(() => false));
+    
+    this.networkSubscription = merge(online$, offline$)
+      .pipe(debounceTime(1000)) // Debounce to avoid rapid state changes
+      .subscribe(isOnline => {
+        this.isOnline = isOnline;
+        this.handleNetworkChange(isOnline);
+      });
+  }
+
+  private handleNetworkChange(isOnline: boolean) {
+    if (!this.attempt) return;
+
+    if (!isOnline && this.attempt.status === 'in_progress') {
+      // Network went offline - pause exam
+      this.wasPausedByNetwork = true;
+      this.pauseExam();
+      this.snackBar.open('Network disconnected. Exam paused automatically.', 'Close', { 
+        duration: 5000,
+        panelClass: ['warning-snackbar']
+      });
+    } else if (isOnline && this.wasPausedByNetwork && this.attempt.status === 'paused') {
+      // Network came back online - resume exam
+      this.wasPausedByNetwork = false;
+      this.resumeExam();
+      this.snackBar.open('Network reconnected. Exam resumed automatically.', 'Close', { 
+        duration: 5000,
+        panelClass: ['success-snackbar']
+      });
+    }
+  }
+
+  private startTimerSynchronization() {
+    if (!this.attempt) return;
+
+    // Sync timer with backend every 30 seconds
+    this.timerSyncSubscription = interval(30000).subscribe(() => {
+      if (this.isOnline && this.attempt && this.attempt.status === 'in_progress') {
+        this.syncTimerWithBackend();
+      }
+    });
+
+    // Initial sync
+    this.syncTimerWithBackend();
+  }
+
+  private syncTimerWithBackend() {
+    if (!this.attempt) return;
+
+    this.attemptsService.getAttempt(this.attempt.id).subscribe({
+      next: (updatedAttempt) => {
+        if (updatedAttempt.endTime !== this.attempt!.endTime) {
+          this.attempt!.endTime = updatedAttempt.endTime;
+          this.snackBar.open('Timer synchronized with server', 'Close', { 
+            duration: 2000,
+            panelClass: ['info-snackbar']
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Error syncing timer:', error);
+        // Don't show error to user for timer sync failures
+      }
+    });
   }
 }

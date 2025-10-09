@@ -135,3 +135,24 @@ input, textarea, select {
   .safe-area-left { padding-left: max(16px, env(safe-area-inset-left)); }
   .safe-area-right { padding-right: max(16px, env(safe-area-inset-right)); }
 }
+
+/* Snackbar styles for exam notifications */
+::ng-deep .success-snackbar {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+::ng-deep .warning-snackbar {
+  background-color: #ff9800 !important;
+  color: white !important;
+}
+
+::ng-deep .info-snackbar {
+  background-color: #2196f3 !important;
+  color: white !important;
+}
+
+::ng-deep .error-snackbar {
+  background-color: #f44336 !important;
+  color: white !important;
+}
