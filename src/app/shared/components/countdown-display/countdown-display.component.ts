@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -75,7 +75,7 @@ import { CountdownService } from '../../services/countdown.service';
     }
   `]
 })
-export class CountdownDisplayComponent implements OnInit, OnDestroy {
+export class CountdownDisplayComponent implements OnInit, OnDestroy, OnChanges {
   @Input() endTime: string = '';
   @Input() onTimeUp?: () => void;
 
@@ -91,6 +91,23 @@ export class CountdownDisplayComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     if (this.endTime) {
+      this.startCountdown();
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['endTime'] && changes['endTime'].currentValue) {
+      // Clear existing interval
+      if (this.intervalId) {
+        clearInterval(this.intervalId);
+        this.intervalId = undefined;
+      }
+      
+      // Reset states
+      this.isWarning = false;
+      this.isDanger = false;
+      
+      // Start new countdown with updated endTime
       this.startCountdown();
     }
   }
@@ -111,7 +128,9 @@ export class CountdownDisplayComponent implements OnInit, OnDestroy {
   }
 
   private updateCountdown() {
-    if (!this.endTime) return;
+    if (!this.endTime) {
+      return;
+    }
 
     const now = new Date().getTime();
     const end = new Date(this.endTime).getTime();
@@ -139,11 +158,10 @@ export class CountdownDisplayComponent implements OnInit, OnDestroy {
     this.isDanger = totalMinutes <= 5;
 
     // Format time
+    this.formattedTime = this.formatTime(timeLeft);
+    
     const hours = Math.floor(timeLeft / (1000 * 60 * 60));
     const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-    this.formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     
     if (hours > 0) {
       this.timeLabel = 'Hours Remaining';
@@ -152,6 +170,14 @@ export class CountdownDisplayComponent implements OnInit, OnDestroy {
     } else {
       this.timeLabel = 'Seconds Remaining';
     }
+  }
+
+  private formatTime(timeLeft: number): string {
+    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 
   // Timer control methods removed - managed by exam container
