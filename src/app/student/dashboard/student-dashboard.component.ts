@@ -176,7 +176,7 @@ import { ExamRulesDialogComponent } from '../../shared/components/exam-rules-dia
                     <div class="attempt-card-header">
                       <div class="attempt-info">
                         <h3>{{ attempt.exam?.title }}</h3>
-                        <p class="exam-year">{{ attempt.exam?.year }}</p>
+                        <p class="exam-year">{{ getExamYear(attempt.exam) }}</p>
                       </div>
                       <mat-chip [class]="getStatusClass(attempt.status)">
                         {{ attempt.status | titlecase }}
