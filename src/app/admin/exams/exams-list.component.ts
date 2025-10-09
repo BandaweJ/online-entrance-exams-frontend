@@ -40,15 +40,17 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
     <div class="exams-container">
       <div class="exams-header">
         <h1>Exam Management</h1>
-        <button mat-raised-button color="primary" routerLink="/admin/exams/create">
+        <button mat-raised-button color="primary" routerLink="/admin/exams/create" class="create-button">
           <mat-icon>add</mat-icon>
-          Create New Exam
+          <span class="tablet-up">Create New Exam</span>
+          <span class="mobile-only">New Exam</span>
         </button>
       </div>
 
       <mat-card *ngIf="!(isLoading$ | async); else loading">
         <mat-card-content>
-          <div class="table-container">
+          <!-- Desktop Table View -->
+          <div class="table-container tablet-up">
             <table mat-table [dataSource]="exams" class="exams-table">
               <!-- Title Column -->
               <ng-container matColumnDef="title">
@@ -143,6 +145,74 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </table>
+          </div>
+
+          <!-- Mobile Card View -->
+          <div class="mobile-exams-list mobile-only" *ngIf="exams.length > 0">
+            <mat-card *ngFor="let exam of exams" class="exam-card">
+              <mat-card-content>
+                <div class="exam-card-header">
+                  <div class="exam-info">
+                    <h3>{{ exam.title }}</h3>
+                    <p class="exam-description">{{ exam.description }}</p>
+                  </div>
+                  <button mat-icon-button [matMenuTriggerFor]="mobileMenu">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                  <mat-menu #mobileMenu="matMenu">
+                    <button mat-menu-item (click)="viewExam(exam.id)">
+                      <mat-icon>visibility</mat-icon>
+                      View
+                    </button>
+                    <button mat-menu-item (click)="editExam(exam.id)">
+                      <mat-icon>edit</mat-icon>
+                      Edit
+                    </button>
+                    <button mat-menu-item (click)="manageQuestions(exam.id)">
+                      <mat-icon>quiz</mat-icon>
+                      Manage Questions
+                    </button>
+                    <button mat-menu-item (click)="publishExam(exam)" *ngIf="exam.status === 'draft'">
+                      <mat-icon>publish</mat-icon>
+                      Publish
+                    </button>
+                    <button mat-menu-item (click)="closeExam(exam)" *ngIf="exam.status === 'published'">
+                      <mat-icon>close</mat-icon>
+                      Close
+                    </button>
+                    <button mat-menu-item (click)="deleteExam(exam)" class="delete-action">
+                      <mat-icon>delete</mat-icon>
+                      Delete
+                    </button>
+                  </mat-menu>
+                </div>
+                
+                <div class="exam-details">
+                  <div class="detail-row">
+                    <span class="detail-label">Year:</span>
+                    <span>{{ exam.year }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Date:</span>
+                    <span>{{ exam.examDate | date:'short' }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Duration:</span>
+                    <span>{{ exam.durationMinutes }} min</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <mat-chip [class]="getStatusClass(exam.status)">
+                      {{ exam.status | titlecase }}
+                    </mat-chip>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Questions:</span>
+                    <span>{{ exam.calculatedTotalQuestions || 0 }} ({{ exam.calculatedTotalMarks || 0 }} marks)</span>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
           </div>
 
           <div class="no-data" *ngIf="exams.length === 0">
@@ -265,6 +335,111 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
     .loading-container p {
       margin-top: 16px;
       color: #666;
+    }
+
+    /* Mobile-specific styles */
+    .mobile-exams-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .exam-card {
+      margin: 0;
+    }
+
+    .exam-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .exam-card-header .exam-info h3 {
+      margin: 0 0 4px 0;
+      font-size: 1.125rem;
+      font-weight: 500;
+      color: #1976d2;
+    }
+
+    .exam-card-header .exam-info .exam-description {
+      margin: 0;
+      color: #666;
+      font-size: 0.875rem;
+      line-height: 1.4;
+    }
+
+    .exam-details {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+    }
+
+    .detail-label {
+      font-weight: 500;
+      color: #666;
+      font-size: 0.875rem;
+    }
+
+    .detail-row span:last-child {
+      color: #333;
+      font-size: 0.875rem;
+    }
+
+    /* Mobile header adjustments */
+    @media (max-width: 768px) {
+      .exams-container {
+        padding: 16px;
+      }
+
+      .exams-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .exams-header h1 {
+        font-size: 1.5rem;
+        text-align: center;
+      }
+
+      .create-button {
+        width: 100%;
+        height: 48px;
+      }
+    }
+
+    /* Small mobile devices */
+    @media (max-width: 480px) {
+      .exams-container {
+        padding: 12px;
+      }
+
+      .exam-card-header .exam-info h3 {
+        font-size: 1rem;
+      }
+
+      .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+
+      .detail-label {
+        font-size: 0.75rem;
+      }
+
+      .detail-row span:last-child {
+        font-size: 0.875rem;
+      }
     }
   `]
 })

@@ -131,7 +131,8 @@ import { SectionSelectionDialogComponent } from '../../shared/components/section
                 </div>
               </div>
 
-              <div class="questions-table" *ngIf="allQuestions.length > 0; else noQuestions">
+              <!-- Desktop Table View -->
+              <div class="questions-table tablet-up" *ngIf="allQuestions.length > 0; else noQuestions">
                 <table mat-table [dataSource]="filteredQuestions" class="questions-table">
                   <ng-container matColumnDef="question">
                     <th mat-header-cell *matHeaderCellDef>Question</th>
@@ -183,6 +184,54 @@ import { SectionSelectionDialogComponent } from '../../shared/components/section
                   <tr mat-header-row *matHeaderRowDef="questionColumns"></tr>
                   <tr mat-row *matRowDef="let row; columns: questionColumns;"></tr>
                 </table>
+              </div>
+
+              <!-- Mobile Card View -->
+              <div class="mobile-questions-list mobile-only" *ngIf="allQuestions.length > 0">
+                <mat-card *ngFor="let question of filteredQuestions" class="question-card">
+                  <mat-card-content>
+                    <div class="question-card-header">
+                      <div class="question-info">
+                        <h4>{{ question.questionText | slice:0:80 }}{{ question.questionText.length > 80 ? '...' : '' }}</h4>
+                        <p class="question-meta">
+                          {{ question.section?.title }} • {{ question.type | titlecase }} • {{ question.marks }} marks
+                        </p>
+                      </div>
+                      <button mat-icon-button [matMenuTriggerFor]="mobileQuestionMenu">
+                        <mat-icon>more_vert</mat-icon>
+                      </button>
+                      <mat-menu #mobileQuestionMenu="matMenu">
+                        <button mat-menu-item (click)="editQuestion(question)">
+                          <mat-icon>edit</mat-icon>
+                          Edit
+                        </button>
+                        <button mat-menu-item (click)="duplicateQuestion(question)">
+                          <mat-icon>content_copy</mat-icon>
+                          Duplicate
+                        </button>
+                        <button mat-menu-item (click)="deleteQuestion(question)" class="delete-action">
+                          <mat-icon>delete</mat-icon>
+                          Delete
+                        </button>
+                      </mat-menu>
+                    </div>
+                    
+                    <div class="question-details">
+                      <div class="question-detail-row">
+                        <span class="question-detail-label">Type:</span>
+                        <mat-chip>{{ question.type | titlecase }}</mat-chip>
+                      </div>
+                      <div class="question-detail-row">
+                        <span class="question-detail-label">Marks:</span>
+                        <span>{{ question.marks }}</span>
+                      </div>
+                      <div class="question-detail-row">
+                        <span class="question-detail-label">Section:</span>
+                        <span>{{ question.section?.title || 'No section' }}</span>
+                      </div>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
               </div>
 
               <ng-template #noQuestions>
@@ -348,6 +397,172 @@ import { SectionSelectionDialogComponent } from '../../shared/components/section
     .loading-container p {
       margin-top: 16px;
       color: #666;
+    }
+
+    /* Mobile-specific styles */
+    @media (max-width: 768px) {
+      .question-editor-container {
+        padding: 16px;
+      }
+
+      .editor-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .editor-header .header-info h1 {
+        font-size: 1.25rem;
+        text-align: center;
+      }
+
+      .editor-header button {
+        width: 100%;
+        height: 48px;
+      }
+
+      .sections-header, .questions-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+      }
+
+      .sections-header h2, .questions-header h2 {
+        font-size: 1.125rem;
+        text-align: center;
+      }
+
+      .sections-header button, .questions-header button {
+        width: 100%;
+        height: 48px;
+      }
+
+      .sections-list {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .section-card {
+        margin: 0;
+      }
+
+      .section-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+
+      .section-header h3 {
+        font-size: 1rem;
+        text-align: center;
+      }
+
+      .question-filters {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .question-filters mat-form-field {
+        width: 100%;
+      }
+
+      .questions-table {
+        display: none; /* Hide table on mobile */
+      }
+
+      /* Mobile questions list */
+      .mobile-questions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .question-card {
+        margin: 0;
+      }
+
+      .question-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+      }
+
+      .question-card-header .question-info h4 {
+        margin: 0 0 4px 0;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #1976d2;
+        line-height: 1.4;
+      }
+
+      .question-card-header .question-info .question-meta {
+        margin: 0;
+        font-size: 0.75rem;
+        color: #666;
+      }
+
+      .question-details {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .question-detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 0;
+      }
+
+      .question-detail-label {
+        font-weight: 500;
+        color: #666;
+        font-size: 0.875rem;
+      }
+
+      .question-detail-row span:last-child {
+        color: #333;
+        font-size: 0.875rem;
+      }
+    }
+
+    /* Small mobile devices */
+    @media (max-width: 480px) {
+      .question-editor-container {
+        padding: 12px;
+      }
+
+      .editor-header .header-info h1 {
+        font-size: 1.125rem;
+      }
+
+      .sections-header h2, .questions-header h2 {
+        font-size: 1rem;
+      }
+
+      .section-header h3 {
+        font-size: 0.875rem;
+      }
+
+      .question-card-header .question-info h4 {
+        font-size: 0.875rem;
+      }
+
+      .question-detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+
+      .question-detail-label {
+        font-size: 0.75rem;
+      }
+
+      .question-detail-row span:last-child {
+        font-size: 0.875rem;
+      }
     }
   `]
 })

@@ -109,7 +109,8 @@ import { StudentEditDialogComponent } from '../../shared/components/student-edit
             </mat-form-field>
           </div>
 
-          <div class="table-container">
+          <!-- Desktop Table View -->
+          <div class="table-container tablet-up">
             <table mat-table [dataSource]="filteredStudents" class="students-table">
               <!-- Student ID Column -->
               <ng-container matColumnDef="studentId">
@@ -209,6 +210,80 @@ import { StudentEditDialogComponent } from '../../shared/components/student-edit
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </table>
+          </div>
+
+          <!-- Mobile Card View -->
+          <div class="mobile-students-list mobile-only" *ngIf="filteredStudents.length > 0">
+            <mat-card *ngFor="let student of filteredStudents" class="student-card">
+              <mat-card-content>
+                <div class="student-card-header">
+                  <div class="student-info">
+                    <h3>{{ student.firstName }} {{ student.lastName }}</h3>
+                    <p class="student-email">{{ student.email }}</p>
+                    <p class="student-id">ID: {{ student.studentId }}</p>
+                  </div>
+                  <button mat-icon-button [matMenuTriggerFor]="mobileMenu">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                  <mat-menu #mobileMenu="matMenu">
+                    <button mat-menu-item (click)="viewStudent(student.id)">
+                      <mat-icon>visibility</mat-icon>
+                      View
+                    </button>
+                    <button mat-menu-item (click)="editStudent(student.id)">
+                      <mat-icon>edit</mat-icon>
+                      Edit
+                    </button>
+                    <button mat-menu-item (click)="resendCredentials(student)" *ngIf="!student.credentialsSent">
+                      <mat-icon>email</mat-icon>
+                      Send Credentials
+                    </button>
+                    <button mat-menu-item (click)="resendCredentials(student)" *ngIf="student.credentialsSent">
+                      <mat-icon>refresh</mat-icon>
+                      Resend Credentials
+                    </button>
+                    <button mat-menu-item (click)="toggleStudentStatus(student)">
+                      <mat-icon>{{ student.isActive ? 'block' : 'check_circle' }}</mat-icon>
+                      {{ student.isActive ? 'Deactivate' : 'Activate' }}
+                    </button>
+                    <button mat-menu-item (click)="deleteStudent(student)" class="delete-action">
+                      <mat-icon>delete</mat-icon>
+                      Delete
+                    </button>
+                  </mat-menu>
+                </div>
+                
+                <div class="student-details">
+                  <div class="detail-row">
+                    <span class="detail-label">School:</span>
+                    <span>{{ student.school || 'Not specified' }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Grade:</span>
+                    <span>{{ student.grade || 'N/A' }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Phone:</span>
+                    <span>{{ student.phone || 'Not provided' }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <div class="status-chips">
+                      <mat-chip [class]="student.isActive ? 'status-active' : 'status-inactive'">
+                        {{ student.isActive ? 'Active' : 'Inactive' }}
+                      </mat-chip>
+                      <mat-chip [class]="student.credentialsSent ? 'status-sent' : 'status-pending'">
+                        {{ student.credentialsSent ? 'Sent' : 'Pending' }}
+                      </mat-chip>
+                    </div>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Created:</span>
+                    <span>{{ student.createdAt | date:'short' }}</span>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
           </div>
 
           <div class="no-data" *ngIf="filteredStudents.length === 0 && !isLoading">
@@ -396,6 +471,154 @@ import { StudentEditDialogComponent } from '../../shared/components/student-edit
     .loading-container p {
       margin-top: 16px;
       color: #666;
+    }
+
+    /* Mobile-specific styles */
+    .mobile-students-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .student-card {
+      margin: 0;
+    }
+
+    .student-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .student-card-header .student-info h3 {
+      margin: 0 0 4px 0;
+      font-size: 1.125rem;
+      font-weight: 500;
+      color: #1976d2;
+    }
+
+    .student-card-header .student-info .student-email {
+      margin: 0 0 2px 0;
+      color: #666;
+      font-size: 0.875rem;
+    }
+
+    .student-card-header .student-info .student-id {
+      margin: 0;
+      color: #999;
+      font-size: 0.75rem;
+    }
+
+    .student-details {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+    }
+
+    .detail-label {
+      font-weight: 500;
+      color: #666;
+      font-size: 0.875rem;
+    }
+
+    .detail-row span:last-child {
+      color: #333;
+      font-size: 0.875rem;
+    }
+
+    .detail-row .status-chips {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* Mobile header adjustments */
+    @media (max-width: 768px) {
+      .students-container {
+        padding: 16px;
+      }
+
+      .students-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .students-header h1 {
+        font-size: 1.5rem;
+        text-align: center;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .stat-card {
+        padding: 12px;
+      }
+
+      .stat-content {
+        gap: 12px;
+      }
+
+      .stat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+
+      .stat-info h3 {
+        font-size: 18px;
+      }
+
+      .stat-info p {
+        font-size: 12px;
+      }
+
+      .search-field {
+        width: 100%;
+      }
+    }
+
+    /* Small mobile devices */
+    @media (max-width: 480px) {
+      .students-container {
+        padding: 12px;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .student-card-header .student-info h3 {
+        font-size: 1rem;
+      }
+
+      .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+
+      .detail-label {
+        font-size: 0.75rem;
+      }
+
+      .detail-row span:last-child {
+        font-size: 0.875rem;
+      }
     }
   `]
 })
