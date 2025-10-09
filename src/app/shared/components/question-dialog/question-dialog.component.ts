@@ -204,6 +204,75 @@ export interface QuestionDialogData {
     mat-dialog-actions {
       margin-top: 20px;
     }
+
+    /* Mobile-specific styles */
+    @media (max-width: 768px) {
+      .question-form {
+        min-width: auto;
+        width: 100%;
+      }
+
+      .form-row {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .half-width {
+        width: 100%;
+      }
+
+      .options-section {
+        padding: 12px;
+      }
+
+      .options-header h4 {
+        font-size: 16px;
+      }
+
+      .option-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+
+      .option-input {
+        width: 100%;
+      }
+
+      mat-dialog-content {
+        margin: 16px 0;
+      }
+      
+      mat-dialog-actions {
+        margin-top: 16px;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      mat-dialog-actions button {
+        width: 100%;
+        height: 48px;
+      }
+    }
+
+    /* Small mobile devices */
+    @media (max-width: 480px) {
+      .options-section {
+        padding: 10px;
+      }
+
+      .options-header h4 {
+        font-size: 15px;
+      }
+
+      mat-dialog-content {
+        margin: 12px 0;
+      }
+      
+      mat-dialog-actions {
+        margin-top: 12px;
+      }
+    }
   `]
 })
 export class QuestionDialogComponent {

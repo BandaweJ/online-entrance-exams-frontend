@@ -19,6 +19,9 @@ import { AppState } from '../../core/store/app.reducer';
 import { User } from '../../models/user.model';
 import { UserService } from '../../core/services/user.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
+import { UserDetailDialogComponent } from '../../shared/components/user-detail-dialog/user-detail-dialog.component';
+import { UserEditDialogComponent } from '../../shared/components/user-edit-dialog/user-edit-dialog.component';
+import { UserRoleDialogComponent } from '../../shared/components/user-role-dialog/user-role-dialog.component';
 
 @Component({
   selector: 'app-users-list',
@@ -581,11 +584,29 @@ export class UsersListComponent implements OnInit, OnDestroy {
   }
 
   viewUser(user: User) {
-    // Implement view user details
+    this.dialog.open(UserDetailDialogComponent, {
+      data: { user },
+      width: '500px',
+      maxWidth: '90vw'
+    });
   }
 
   editUser(user: User) {
-    // Implement edit user
+    this.dialog.open(UserEditDialogComponent, {
+      data: { user },
+      width: '500px',
+      maxWidth: '90vw'
+    }).afterClosed().subscribe(result => {
+      if (result) {
+        // Update the user in the list
+        const index = this.users.findIndex(u => u.id === user.id);
+        if (index !== -1) {
+          this.users[index] = result;
+          this.filteredUsers = [...this.users];
+        }
+        this.snackBar.open('User updated successfully', 'Close', { duration: 3000 });
+      }
+    });
   }
 
   toggleUserStatus(user: User) {
@@ -622,7 +643,21 @@ export class UsersListComponent implements OnInit, OnDestroy {
   }
 
   changeUserRole(user: User) {
-    // Implement change user role
+    this.dialog.open(UserRoleDialogComponent, {
+      data: { user },
+      width: '500px',
+      maxWidth: '90vw'
+    }).afterClosed().subscribe(result => {
+      if (result) {
+        // Update the user in the list
+        const index = this.users.findIndex(u => u.id === user.id);
+        if (index !== -1) {
+          this.users[index] = result;
+          this.filteredUsers = [...this.users];
+        }
+        this.snackBar.open(`User role changed to ${result.role} successfully`, 'Close', { duration: 3000 });
+      }
+    });
   }
 
   deleteUser(user: User) {

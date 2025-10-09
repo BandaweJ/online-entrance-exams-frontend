@@ -650,7 +650,8 @@ export class QuestionEditorComponent implements OnInit {
         title: 'Add New Section',
         examId: this.exam?.id || ''
       },
-      width: '500px'
+      width: '500px',
+      maxWidth: '90vw'
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -680,7 +681,8 @@ export class QuestionEditorComponent implements OnInit {
         section: section,
         examId: this.exam?.id || ''
       },
-      width: '500px'
+      width: '500px',
+      maxWidth: '90vw'
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -749,7 +751,8 @@ export class QuestionEditorComponent implements OnInit {
         title: 'Select Section',
         sections: this.sections
       },
-      width: '400px'
+      width: '400px',
+      maxWidth: '90vw'
     });
 
     sectionDialogRef.afterClosed().subscribe(selectedSection => {
@@ -760,7 +763,8 @@ export class QuestionEditorComponent implements OnInit {
             sectionId: selectedSection.id,
             sectionTitle: selectedSection.title
           },
-          width: '600px'
+          width: '600px',
+          maxWidth: '90vw'
         });
 
         dialogRef.afterClosed().subscribe(result => {
@@ -795,7 +799,8 @@ export class QuestionEditorComponent implements OnInit {
         sectionId: question.sectionId,
         sectionTitle: section?.title || 'Unknown Section'
       },
-      width: '600px'
+      width: '600px',
+      maxWidth: '90vw'
     });
 
     dialogRef.afterClosed().subscribe(result => {

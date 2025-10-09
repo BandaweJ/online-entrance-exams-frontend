@@ -136,6 +136,82 @@ import { StudentService } from '../../../core/services/student.service';
       gap: 16px;
     }
 
+    /* Mobile-specific styles */
+    @media (max-width: 768px) {
+      .student-details {
+        padding: 12px 0;
+      }
+
+      .detail-section h3 {
+        font-size: 16px;
+        text-align: center;
+      }
+
+      .detail-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .detail-item {
+        gap: 2px;
+      }
+
+      .detail-item label {
+        font-size: 13px;
+      }
+
+      .detail-item span {
+        font-size: 15px;
+      }
+
+      .status-chips {
+        justify-content: center;
+      }
+
+      .credentials-info {
+        padding: 12px;
+      }
+
+      .credential-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+
+      .credential-item label {
+        min-width: auto;
+      }
+
+      .credential-note {
+        font-size: 13px;
+        padding: 10px;
+      }
+    }
+
+    /* Small mobile devices */
+    @media (max-width: 480px) {
+      .detail-section h3 {
+        font-size: 15px;
+      }
+
+      .detail-item label {
+        font-size: 12px;
+      }
+
+      .detail-item span {
+        font-size: 14px;
+      }
+
+      .credentials-info {
+        padding: 10px;
+      }
+
+      .credential-note {
+        font-size: 12px;
+        padding: 8px;
+      }
+    }
+
     .detail-item {
       display: flex;
       flex-direction: column;

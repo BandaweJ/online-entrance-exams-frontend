@@ -683,7 +683,8 @@ export class StudentsListComponent implements OnInit {
     if (student) {
       this.dialog.open(StudentDetailDialogComponent, {
         data: { student },
-        width: '600px'
+        width: '600px',
+        maxWidth: '90vw'
       });
     }
   }
@@ -693,7 +694,8 @@ export class StudentsListComponent implements OnInit {
     if (student) {
       this.dialog.open(StudentEditDialogComponent, {
         data: { student },
-        width: '600px'
+        width: '600px',
+        maxWidth: '90vw'
       }).afterClosed().subscribe(result => {
         if (result) {
           this.studentService.updateStudent(id, result).subscribe({
