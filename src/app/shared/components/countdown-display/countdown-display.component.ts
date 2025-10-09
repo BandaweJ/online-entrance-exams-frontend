@@ -77,6 +77,8 @@ import { CountdownService } from '../../services/countdown.service';
 })
 export class CountdownDisplayComponent implements OnInit, OnDestroy, OnChanges {
   @Input() endTime: string = '';
+  @Input() timeSpent: number = 0; // Time already spent in seconds
+  @Input() totalDuration: number = 0; // Total exam duration in minutes
   @Input() onTimeUp?: () => void;
 
   formattedTime: string = '00:00:00';
@@ -90,13 +92,16 @@ export class CountdownDisplayComponent implements OnInit, OnDestroy, OnChanges {
   constructor(private countdownService: CountdownService) {}
 
   ngOnInit() {
-    if (this.endTime) {
+    if (this.totalDuration) {
       this.startCountdown();
     }
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['endTime'] && changes['endTime'].currentValue) {
+    if ((changes['endTime'] && changes['endTime'].currentValue) ||
+        (changes['timeSpent'] && changes['timeSpent'].currentValue !== undefined) ||
+        (changes['totalDuration'] && changes['totalDuration'].currentValue)) {
+      
       // Clear existing interval
       if (this.intervalId) {
         clearInterval(this.intervalId);
@@ -107,7 +112,7 @@ export class CountdownDisplayComponent implements OnInit, OnDestroy, OnChanges {
       this.isWarning = false;
       this.isDanger = false;
       
-      // Start new countdown with updated endTime
+      // Start new countdown with updated values
       this.startCountdown();
     }
   }
@@ -128,40 +133,30 @@ export class CountdownDisplayComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private updateCountdown() {
-    if (!this.endTime) {
+    if (!this.totalDuration) {
       return;
     }
 
-    const now = new Date().getTime();
-    const end = new Date(this.endTime).getTime();
-    const timeLeft = end - now;
-
-    if (timeLeft <= 0) {
-      this.formattedTime = '00:00:00';
-      this.timeLabel = 'Time Up!';
-      this.isDanger = true;
-      
-      if (this.onTimeUp) {
-        this.onTimeUp();
-      }
-      
-      if (this.intervalId) {
-        clearInterval(this.intervalId);
-        this.intervalId = undefined;
-      }
+    // Calculate remaining time based on total duration and time already spent
+    const totalDurationSeconds = this.totalDuration * 60; // Convert minutes to seconds
+    const remainingSeconds = totalDurationSeconds - this.timeSpent;
+    
+    // If time is up or negative, show 00:00:00
+    if (remainingSeconds <= 0) {
+      this.handleTimeUp();
       return;
     }
 
     // Update warning states
-    const totalMinutes = Math.floor(timeLeft / (1000 * 60));
-    this.isWarning = totalMinutes <= 10 && totalMinutes > 5;
-    this.isDanger = totalMinutes <= 5;
+    const remainingMinutes = Math.floor(remainingSeconds / 60);
+    this.isWarning = remainingMinutes <= 10 && remainingMinutes > 5;
+    this.isDanger = remainingMinutes <= 5;
 
     // Format time
-    this.formattedTime = this.formatTime(timeLeft);
+    this.formattedTime = this.formatTimeFromSeconds(remainingSeconds);
     
-    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const hours = Math.floor(remainingSeconds / 3600);
+    const minutes = Math.floor((remainingSeconds % 3600) / 60);
     
     if (hours > 0) {
       this.timeLabel = 'Hours Remaining';
@@ -172,10 +167,25 @@ export class CountdownDisplayComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
 
-  private formatTime(timeLeft: number): string {
-    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+  private handleTimeUp() {
+    this.formattedTime = '00:00:00';
+    this.timeLabel = 'Time Up!';
+    this.isDanger = true;
+    
+    if (this.onTimeUp) {
+      this.onTimeUp();
+    }
+    
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = undefined;
+    }
+  }
+
+  private formatTimeFromSeconds(totalSeconds: number): string {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
 
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }

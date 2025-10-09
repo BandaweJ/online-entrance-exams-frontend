@@ -68,6 +68,8 @@ import { map, filter, debounceTime } from 'rxjs/operators';
           <div class="timer-section">
             <app-countdown-display 
               [endTime]="attempt.endTime"
+              [timeSpent]="attempt.timeSpent"
+              [totalDuration]="exam.durationMinutes"
               (timeUp)="onTimeUp()">
             </app-countdown-display>
           </div>
@@ -621,6 +623,7 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   private timerSyncSubscription?: Subscription;
   private isOnline = navigator.onLine;
   private wasPausedByNetwork = false;
+  private resumeTime?: Date; // Track when exam was resumed
   private autoSaveTimeout: any;
   isSubmitting = false;
   isMobile = false;
@@ -788,8 +791,8 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   private startTimeTracking() {
     // Wait a bit for the attempt to be fully loaded before starting time tracking
     setTimeout(() => {
-      // Update time spent every minute
-      this.timeUpdateSubscription = interval(60000).subscribe(() => {
+      // Update time spent every second for real-time timer
+      this.timeUpdateSubscription = interval(1000).subscribe(() => {
         if (this.attempt && this.attempt.status === 'in_progress') {
           this.updateTimeSpent();
         }
@@ -798,23 +801,36 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   }
 
   private updateTimeSpent() {
-    if (this.attempt && this.attempt.startedAt && this.attempt.status === 'in_progress') {
-      const now = new Date();
-      const startTime = new Date(this.attempt.startedAt);
-      const timeSpent = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+    if (this.attempt && this.attempt.status === 'in_progress') {
+      let timeSpent = 0;
       
-      // Only update if timeSpent is a valid positive number and different from current timeSpent
-      if (timeSpent >= 0 && !isNaN(timeSpent) && timeSpent !== this.attempt.timeSpent) {
+      if (this.attempt.startedAt) {
+        const now = new Date();
+        
+        if (this.resumeTime) {
+          // Exam was resumed - calculate time from resume point
+          const sessionTimeSpent = Math.floor((now.getTime() - this.resumeTime.getTime()) / 1000);
+          const previouslySpentTime = this.attempt.timeSpent || 0;
+          timeSpent = previouslySpentTime + sessionTimeSpent;
+        } else {
+          // Fresh exam start - calculate from original start time
+          const startTime = new Date(this.attempt.startedAt);
+          timeSpent = Math.floor((now.getTime() - startTime.getTime()) / 1000);
+        }
+      }
+      
+      // Update local timeSpent for real-time display
+      this.attempt.timeSpent = timeSpent;
+      
+      // Only update backend every 30 seconds to avoid too many API calls
+      if (timeSpent % 30 === 0) {
         this.attemptsService.updateAttempt(this.attempt.id, { timeSpent }).subscribe({
           next: (updatedAttempt) => {
-            this.attempt = updatedAttempt;
+            // Keep local timeSpent as it's more accurate for real-time display
+            this.attempt!.timeSpent = timeSpent;
           },
           error: (error) => {
             console.error('Error updating time spent:', error);
-            // Stop time tracking if there's an error to prevent continuous failures
-            if (this.timeUpdateSubscription) {
-              this.timeUpdateSubscription.unsubscribe();
-            }
           }
         });
       }
@@ -893,6 +909,9 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
 
   pauseExam() {
     if (this.attempt) {
+      // Clear resume time when pausing
+      this.resumeTime = undefined;
+      
       // If offline, just update local state
       if (!this.isOnline) {
         this.attempt.status = 'paused';
@@ -917,6 +936,9 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
 
   resumeExam() {
     if (this.attempt) {
+      // Set resume time for proper time tracking
+      this.resumeTime = new Date();
+      
       // If offline, just update local state
       if (!this.isOnline) {
         this.attempt.status = 'in_progress';
