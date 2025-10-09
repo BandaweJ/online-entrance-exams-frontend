@@ -176,15 +176,17 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      padding: 20px;
-      gap: 20px;
+      padding: 16px;
+      gap: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
 
     .login-card, .register-card {
       width: 100%;
       max-width: 400px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
       border-radius: 12px;
+      background: white;
     }
 
     .login-form, .register-form {
@@ -195,6 +197,7 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
 
     .form-row {
       display: flex;
+      flex-direction: column;
       gap: 16px;
     }
 
@@ -210,16 +213,19 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
       height: 48px;
       font-size: 16px;
       margin-top: 8px;
+      font-weight: 500;
     }
 
     .register-text {
       text-align: center;
       margin: 0;
+      font-size: 14px;
     }
 
     .register-text a {
       color: #1976d2;
       text-decoration: none;
+      font-weight: 500;
     }
 
     .register-text a:hover {
@@ -228,13 +234,14 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
 
     .button-group {
       display: flex;
+      flex-direction: column;
       gap: 12px;
-      justify-content: center;
     }
 
     mat-card-header {
       text-align: center;
       margin-bottom: 20px;
+      padding: 24px 24px 0 24px;
     }
 
     mat-card-title {
@@ -242,20 +249,30 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
       align-items: center;
       justify-content: center;
       gap: 8px;
-      font-size: 24px;
+      font-size: 1.5rem;
       font-weight: 500;
+      color: #1976d2;
     }
 
     mat-card-subtitle {
       font-size: 14px;
       color: #666;
+      margin-top: 8px;
+    }
+
+    mat-card-content {
+      padding: 0 24px 24px 24px;
+    }
+
+    mat-card-actions {
+      padding: 0 24px 24px 24px;
     }
 
     .registration-info {
       background-color: #e3f2fd;
       border: 1px solid #bbdefb;
-      border-radius: 4px;
-      padding: 12px;
+      border-radius: 8px;
+      padding: 16px;
       margin-bottom: 20px;
     }
 
@@ -263,16 +280,17 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
       margin: 0;
       font-size: 14px;
       color: #1976d2;
+      line-height: 1.4;
     }
 
     .error-message {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 8px;
       background-color: #ffebee;
       border: 1px solid #f44336;
-      border-radius: 4px;
-      padding: 12px;
+      border-radius: 8px;
+      padding: 16px;
       margin-bottom: 16px;
       color: #c62828;
       font-size: 14px;
@@ -282,16 +300,17 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
       font-size: 20px;
       width: 20px;
       height: 20px;
+      margin-top: 2px;
     }
 
     .success-message {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 8px;
       background-color: #e8f5e8;
       border: 1px solid #4caf50;
-      border-radius: 4px;
-      padding: 12px;
+      border-radius: 8px;
+      padding: 16px;
       margin-bottom: 16px;
       color: #2e7d32;
       font-size: 14px;
@@ -301,6 +320,50 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
       font-size: 20px;
       width: 20px;
       height: 20px;
+      margin-top: 2px;
+    }
+
+    /* Mobile-specific improvements */
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 12px;
+      }
+
+      mat-card-header {
+        padding: 20px 20px 0 20px;
+      }
+
+      mat-card-content {
+        padding: 0 20px 20px 20px;
+      }
+
+      mat-card-actions {
+        padding: 0 20px 20px 20px;
+      }
+
+      mat-card-title {
+        font-size: 1.25rem;
+      }
+    }
+
+    /* Tablet and up */
+    @media (min-width: 768px) {
+      .login-container {
+        padding: 24px;
+      }
+
+      .form-row {
+        flex-direction: row;
+      }
+
+      .button-group {
+        flex-direction: row;
+        justify-content: center;
+      }
+
+      mat-card-title {
+        font-size: 1.75rem;
+      }
     }
   `]
 })

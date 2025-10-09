@@ -115,6 +115,34 @@ import { interval, Subscription } from 'rxjs';
           </app-exam-navigation>
         </div>
 
+        <!-- Mobile Floating Navigation Button -->
+        <button mat-fab color="primary" class="mobile-nav-fab" 
+                (click)="toggleMobileNav()" 
+                *ngIf="isMobile">
+          <mat-icon>{{ showMobileNav ? 'close' : 'list' }}</mat-icon>
+        </button>
+
+        <!-- Mobile Navigation Overlay -->
+        <div class="mobile-nav-overlay" *ngIf="isMobile && showMobileNav" (click)="toggleMobileNav()">
+          <div class="mobile-nav-content" (click)="$event.stopPropagation()">
+            <div class="mobile-nav-header">
+              <h3>Question Navigation</h3>
+              <button mat-icon-button (click)="toggleMobileNav()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            <app-exam-navigation
+              [questions]="questions"
+              [currentQuestionIndex]="currentQuestionIndex"
+              [answeredQuestions]="answeredQuestions"
+              [draftedQuestions]="draftedQuestions"
+              [flaggedQuestions]="flaggedQuestions"
+              [isPaused]="attempt.status === 'paused'"
+              (questionSelected)="onQuestionSelected($event); toggleMobileNav()">
+            </app-exam-navigation>
+          </div>
+        </div>
+
         <!-- Question Area -->
         <div class="question-area">
           <!-- Section Header -->
@@ -349,26 +377,232 @@ import { interval, Subscription } from 'rxjs';
       color: #666;
     }
 
+    /* Mobile-First Responsive Design */
     @media (max-width: 768px) {
+      .exam-container {
+        padding: 0;
+      }
+
+      .exam-header {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 16px;
+        gap: 16px;
+      }
+
+      .exam-info h1 {
+        font-size: 1.25rem;
+        margin-bottom: 4px;
+      }
+
+      .exam-info p {
+        font-size: 0.875rem;
+      }
+
+      .exam-controls {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .timer-section {
+        justify-content: center;
+      }
+
+      .action-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .action-buttons button {
+        flex: 1;
+        min-width: 120px;
+      }
+
+      .progress-section {
+        padding: 12px 16px;
+      }
+
+      .progress-info {
+        font-size: 12px;
+      }
+
       .exam-content {
         flex-direction: column;
+        min-height: auto;
       }
 
       .navigation-sidebar {
         width: 100%;
         border-right: none;
         border-bottom: 1px solid #e0e0e0;
+        padding: 16px;
+        order: 2; /* Show navigation after question on mobile */
       }
 
       .question-area {
+        flex: 1;
+        padding: 16px;
         margin: 0;
         border-radius: 0;
+        order: 1; /* Show question first on mobile */
+      }
+
+      .section-header {
+        padding: 12px;
+        margin-bottom: 16px;
+      }
+
+      .section-chip {
+        font-size: 0.75rem;
+      }
+
+      .section-description {
+        font-size: 0.75rem;
+      }
+
+      .question-navigation {
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 20px;
+        padding-top: 16px;
+      }
+
+      .question-navigation button {
+        width: 100%;
+        height: 48px;
+        font-size: 16px;
       }
 
       .paused-content {
-        margin: 20px;
-        padding: 30px 20px;
+        margin: 16px;
+        padding: 24px 16px;
+        max-width: calc(100vw - 32px);
       }
+
+      .paused-content h2 {
+        font-size: 1.5rem;
+      }
+
+      .paused-content p {
+        font-size: 14px;
+      }
+
+      .paused-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+      }
+    }
+
+    /* Small mobile devices */
+    @media (max-width: 480px) {
+      .exam-header {
+        padding: 12px;
+      }
+
+      .exam-info h1 {
+        font-size: 1.125rem;
+      }
+
+      .action-buttons button {
+        min-width: 100px;
+        font-size: 14px;
+      }
+
+      .question-area {
+        padding: 12px;
+      }
+
+      .navigation-sidebar {
+        padding: 12px;
+      }
+
+      .paused-content {
+        margin: 12px;
+        padding: 20px 12px;
+      }
+    }
+
+    /* Tablet and up */
+    @media (min-width: 769px) {
+      .exam-content {
+        flex-direction: row;
+      }
+
+      .navigation-sidebar {
+        width: 300px;
+        order: 1;
+      }
+
+      .question-area {
+        order: 2;
+        margin: 20px;
+      }
+
+      .question-navigation {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .question-navigation button {
+        width: auto;
+        min-width: 120px;
+      }
+    }
+
+    /* Mobile Navigation Styles */
+    .mobile-nav-fab {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      width: 56px;
+      height: 56px;
+    }
+
+    .mobile-nav-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .mobile-nav-content {
+      background: white;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .mobile-nav-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e0e0e0;
+      background-color: #f5f5f5;
+    }
+
+    .mobile-nav-header h3 {
+      margin: 0;
+      font-size: 1.125rem;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .mobile-nav-header button {
+      min-width: 44px;
+      min-height: 44px;
     }
   `]
 })
@@ -384,6 +618,8 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   private timeUpdateSubscription?: Subscription;
   private autoSaveTimeout: any;
   isSubmitting = false;
+  isMobile = false;
+  showMobileNav = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -396,6 +632,10 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    // Mobile detection
+    this.checkScreenSize();
+    window.addEventListener('resize', () => this.checkScreenSize());
+    
     const examId = this.route.snapshot.paramMap.get('id');
     const attemptId = this.route.snapshot.paramMap.get('attemptId');
     
@@ -404,6 +644,14 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
     } else if (examId) {
       this.startNewExam(examId);
     }
+  }
+
+  checkScreenSize() {
+    this.isMobile = window.innerWidth < 768;
+  }
+
+  toggleMobileNav() {
+    this.showMobileNav = !this.showMobileNav;
   }
 
   ngOnDestroy() {
