@@ -293,6 +293,121 @@ interface RecentActivity {
       margin-top: 16px;
       color: #666;
     }
+
+    /* Mobile-specific styles */
+    @media (max-width: 768px) {
+      .dashboard-container {
+        padding: 16px;
+      }
+
+      .dashboard-container h1 {
+        font-size: 1.5rem;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .stat-card {
+        padding: 12px;
+      }
+
+      .stat-content {
+        gap: 12px;
+      }
+
+      .stat-icon {
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+      }
+
+      .stat-info h3 {
+        font-size: 20px;
+      }
+
+      .stat-info p {
+        font-size: 12px;
+      }
+
+      .activity-section, .quick-actions {
+        margin-bottom: 20px;
+      }
+
+      .action-buttons {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .action-buttons button {
+        width: 100%;
+        height: 48px;
+        justify-content: center;
+      }
+
+      .activity-item {
+        padding: 8px 0;
+        gap: 12px;
+      }
+
+      .activity-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+
+      .activity-text {
+        font-size: 13px;
+      }
+
+      .activity-time {
+        font-size: 11px;
+      }
+    }
+
+    /* Small mobile devices */
+    @media (max-width: 480px) {
+      .dashboard-container {
+        padding: 12px;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .stat-content {
+        gap: 8px;
+      }
+
+      .stat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+
+      .stat-info h3 {
+        font-size: 18px;
+      }
+
+      .stat-info p {
+        font-size: 11px;
+      }
+
+      .activity-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .activity-content {
+        width: 100%;
+      }
+    }
   `]
 })
 export class DashboardComponent implements OnInit {

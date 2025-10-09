@@ -70,7 +70,8 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
                 </mat-form-field>
               </div>
 
-              <div class="table-container">
+              <!-- Desktop Table View -->
+              <div class="table-container tablet-up">
                 <table mat-table [dataSource]="filteredResults" class="results-table">
                   <!-- Student Column -->
                   <ng-container matColumnDef="student">
@@ -168,6 +169,64 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
                   <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                   <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
                 </table>
+              </div>
+
+              <!-- Mobile Card View -->
+              <div class="mobile-results-list mobile-only" *ngIf="filteredResults.length > 0">
+                <mat-card *ngFor="let result of filteredResults" class="result-card">
+                  <mat-card-content>
+                    <div class="result-card-header">
+                      <div class="result-info">
+                        <h3>{{ result.student?.firstName }} {{ result.student?.lastName }}</h3>
+                        <p class="student-email">{{ result.student?.email }}</p>
+                        <p class="exam-title">{{ result.exam?.title }} ({{ result.exam?.year }})</p>
+                      </div>
+                      <button mat-icon-button [matMenuTriggerFor]="mobileMenu">
+                        <mat-icon>more_vert</mat-icon>
+                      </button>
+                      <mat-menu #mobileMenu="matMenu">
+                        <button mat-menu-item (click)="viewResult(result.id)">
+                          <mat-icon>visibility</mat-icon>
+                          View Details
+                        </button>
+                        <button mat-menu-item (click)="publishResult(result)" *ngIf="!result.isPublished">
+                          <mat-icon>publish</mat-icon>
+                          Publish
+                        </button>
+                        <button mat-menu-item (click)="unpublishResult(result)" *ngIf="result.isPublished">
+                          <mat-icon>unpublish</mat-icon>
+                          Unpublish
+                        </button>
+                      </mat-menu>
+                    </div>
+                    
+                    <div class="result-details">
+                      <div class="detail-row">
+                        <span class="detail-label">Score:</span>
+                        <span class="score-value">{{ result.score }}/{{ result.totalMarks }} ({{ result.percentage | number:'1.2-2' }}%)</span>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">Grade:</span>
+                        <mat-chip [class]="getGradeClass(result.grade)">{{ result.grade }}</mat-chip>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">Rank:</span>
+                        <span>{{ result.rank }}/{{ result.totalStudents }}</span>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <div class="status-chips">
+                          <mat-chip [class]="result.isPassed ? 'status-passed' : 'status-failed'">
+                            {{ result.isPassed ? 'Passed' : 'Failed' }}
+                          </mat-chip>
+                          <mat-chip [class]="result.isPublished ? 'status-published' : 'status-draft'">
+                            {{ result.isPublished ? 'Published' : 'Draft' }}
+                          </mat-chip>
+                        </div>
+                      </div>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
               </div>
             </div>
           </mat-tab>
@@ -446,6 +505,174 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
     .loading-container p {
       margin-top: 16px;
       color: #666;
+    }
+
+    /* Mobile-specific styles */
+    .mobile-results-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .result-card {
+      margin: 0;
+    }
+
+    .result-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .result-card-header .result-info h3 {
+      margin: 0 0 4px 0;
+      font-size: 1.125rem;
+      font-weight: 500;
+      color: #1976d2;
+    }
+
+    .result-card-header .result-info .student-email {
+      margin: 0 0 2px 0;
+      color: #666;
+      font-size: 0.875rem;
+    }
+
+    .result-card-header .result-info .exam-title {
+      margin: 0;
+      color: #999;
+      font-size: 0.75rem;
+    }
+
+    .result-details {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+    }
+
+    .detail-label {
+      font-weight: 500;
+      color: #666;
+      font-size: 0.875rem;
+    }
+
+    .detail-row span:last-child {
+      color: #333;
+      font-size: 0.875rem;
+    }
+
+    .score-value {
+      font-weight: 600;
+      color: #1976d2;
+    }
+
+    .detail-row .status-chips {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* Mobile header adjustments */
+    @media (max-width: 768px) {
+      .results-container {
+        padding: 16px;
+      }
+
+      .results-header h1 {
+        font-size: 1.5rem;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .results-filters {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+      }
+
+      .results-filters mat-form-field {
+        width: 100%;
+        min-width: auto;
+      }
+
+      .stats-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+      }
+
+      .stats-header h2 {
+        font-size: 1.25rem;
+        text-align: center;
+      }
+
+      .stats-header mat-form-field {
+        width: 100%;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .stat-card {
+        padding: 12px;
+      }
+
+      .stat-content {
+        gap: 12px;
+      }
+
+      .stat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+
+      .stat-info h3 {
+        font-size: 18px;
+      }
+
+      .stat-info p {
+        font-size: 12px;
+      }
+    }
+
+    /* Small mobile devices */
+    @media (max-width: 480px) {
+      .results-container {
+        padding: 12px;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .result-card-header .result-info h3 {
+        font-size: 1rem;
+      }
+
+      .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+
+      .detail-label {
+        font-size: 0.75rem;
+      }
+
+      .detail-row span:last-child {
+        font-size: 0.875rem;
+      }
     }
   `]
 })

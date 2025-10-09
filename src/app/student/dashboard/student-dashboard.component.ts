@@ -91,7 +91,8 @@ import { ExamRulesDialogComponent } from '../../shared/components/exam-rules-dia
           <!-- My Attempts Tab -->
           <mat-tab label="My Attempts">
             <div class="tab-content">
-              <div class="attempts-table" *ngIf="attempts.length > 0; else noAttempts">
+              <!-- Desktop Table View -->
+              <div class="attempts-table tablet-up" *ngIf="attempts.length > 0; else noAttempts">
                 <table mat-table [dataSource]="attempts" class="attempts-table">
                   <!-- Exam Column -->
                   <ng-container matColumnDef="exam">
@@ -166,6 +167,59 @@ import { ExamRulesDialogComponent } from '../../shared/components/exam-rules-dia
                   <tr mat-header-row *matHeaderRowDef="attemptColumns"></tr>
                   <tr mat-row *matRowDef="let row; columns: attemptColumns;"></tr>
                 </table>
+              </div>
+
+              <!-- Mobile Card View -->
+              <div class="mobile-attempts-list mobile-only" *ngIf="attempts.length > 0">
+                <mat-card *ngFor="let attempt of attempts" class="attempt-card">
+                  <mat-card-content>
+                    <div class="attempt-card-header">
+                      <div class="attempt-info">
+                        <h3>{{ attempt.exam?.title }}</h3>
+                        <p class="exam-year">{{ attempt.exam?.year }}</p>
+                      </div>
+                      <mat-chip [class]="getStatusClass(attempt.status)">
+                        {{ attempt.status | titlecase }}
+                      </mat-chip>
+                    </div>
+                    
+                    <div class="attempt-details">
+                      <div class="detail-row">
+                        <span class="detail-label">Progress:</span>
+                        <span>{{ attempt.questionsAnswered }}/{{ attempt.totalQuestions }} questions</span>
+                      </div>
+                      <div class="progress-bar">
+                        <div class="progress-fill" [style.width.%]="getProgressPercentage(attempt)"></div>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">Score:</span>
+                        <span *ngIf="attempt.status === 'submitted'">
+                          {{ attempt.score }}/{{ attempt.totalMarks }} ({{ attempt.percentage | number:'1.2-2' }}%)
+                        </span>
+                        <span *ngIf="attempt.status !== 'submitted'">-</span>
+                      </div>
+                      <div class="detail-row">
+                        <span class="detail-label">Time Spent:</span>
+                        <span>{{ formatTime(attempt.timeSpent) }}</span>
+                      </div>
+                    </div>
+                    
+                    <div class="attempt-actions">
+                      <button mat-raised-button color="primary" (click)="continueExam(attempt)" 
+                              *ngIf="attempt.status === 'in_progress' || attempt.status === 'paused'"
+                              class="action-button">
+                        <mat-icon>play_arrow</mat-icon>
+                        Continue
+                      </button>
+                      <button mat-raised-button (click)="viewResult(attempt)" 
+                              *ngIf="attempt.status === 'submitted'"
+                              class="action-button">
+                        <mat-icon>visibility</mat-icon>
+                        View Result
+                      </button>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
               </div>
 
               <ng-template #noAttempts>
@@ -479,6 +533,170 @@ import { ExamRulesDialogComponent } from '../../shared/components/exam-rules-dia
       font-size: 16px;
       width: 16px;
       height: 16px;
+    }
+
+    /* Mobile-specific styles */
+    .mobile-attempts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .attempt-card {
+      margin: 0;
+    }
+
+    .attempt-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .attempt-card-header .attempt-info h3 {
+      margin: 0 0 4px 0;
+      font-size: 1.125rem;
+      font-weight: 500;
+      color: #1976d2;
+    }
+
+    .attempt-card-header .attempt-info .exam-year {
+      margin: 0;
+      color: #666;
+      font-size: 0.875rem;
+    }
+
+    .attempt-details {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+    }
+
+    .detail-label {
+      font-weight: 500;
+      color: #666;
+      font-size: 0.875rem;
+    }
+
+    .detail-row span:last-child {
+      color: #333;
+      font-size: 0.875rem;
+    }
+
+    .attempt-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-button {
+      flex: 1;
+      height: 48px;
+    }
+
+    /* Mobile header adjustments */
+    @media (max-width: 768px) {
+      .student-dashboard-container {
+        padding: 16px;
+      }
+
+      .dashboard-header h1 {
+        font-size: 1.5rem;
+        text-align: center;
+      }
+
+      .dashboard-header p {
+        text-align: center;
+      }
+
+      .exams-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .exam-card {
+        margin: 0;
+      }
+
+      .exam-stats {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .exam-date {
+        justify-content: center;
+      }
+
+      .results-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .result-card {
+        margin: 0;
+      }
+
+      .result-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .stat-item h3 {
+        font-size: 18px;
+      }
+
+      .stat-item p {
+        font-size: 11px;
+      }
+
+      .result-status {
+        justify-content: center;
+      }
+    }
+
+    /* Small mobile devices */
+    @media (max-width: 480px) {
+      .student-dashboard-container {
+        padding: 12px;
+      }
+
+      .dashboard-header h1 {
+        font-size: 1.25rem;
+      }
+
+      .result-stats {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .attempt-card-header .attempt-info h3 {
+        font-size: 1rem;
+      }
+
+      .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+
+      .detail-label {
+        font-size: 0.75rem;
+      }
+
+      .detail-row span:last-child {
+        font-size: 0.875rem;
+      }
+
+      .attempt-actions {
+        flex-direction: column;
+      }
     }
   `]
 })

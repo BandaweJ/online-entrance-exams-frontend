@@ -314,13 +314,93 @@ import { AuthService } from '../../../core/services/auth.service';
       color: #666;
     }
 
+    /* Mobile-specific styles */
     @media (max-width: 768px) {
+      .profile-container {
+        padding: 16px;
+      }
+
+      .profile-card {
+        margin: 0;
+      }
+
+      .profile-content {
+        gap: 24px;
+      }
+
+      .user-info-section, .edit-section, .password-section {
+        padding: 16px;
+      }
+
+      .user-info-section h3, .edit-section h3, .password-section h3 {
+        font-size: 16px;
+        text-align: center;
+        margin-bottom: 16px;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .info-item {
+        gap: 2px;
+      }
+
+      .info-item label {
+        font-size: 13px;
+      }
+
+      .info-item span {
+        font-size: 15px;
+      }
+
+      .role-badge, .status-badge {
+        font-size: 11px;
+        padding: 3px 8px;
+      }
+
       .form-row {
         flex-direction: column;
+        gap: 12px;
       }
       
       .button-group {
         flex-direction: column;
+        gap: 8px;
+      }
+
+      .button-group button {
+        width: 100%;
+        height: 48px;
+      }
+    }
+
+    /* Small mobile devices */
+    @media (max-width: 480px) {
+      .profile-container {
+        padding: 12px;
+      }
+
+      .user-info-section, .edit-section, .password-section {
+        padding: 12px;
+      }
+
+      .user-info-section h3, .edit-section h3, .password-section h3 {
+        font-size: 15px;
+      }
+
+      .info-item label {
+        font-size: 12px;
+      }
+
+      .info-item span {
+        font-size: 14px;
+      }
+
+      .role-badge, .status-badge {
+        font-size: 10px;
+        padding: 2px 6px;
       }
     }
   `]
