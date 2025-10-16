@@ -1,4 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
+import { toggleTheme, setTheme } from './ui.actions';
 
 export interface UIState {
   sidebarOpen: boolean;
@@ -12,4 +13,14 @@ export const initialState: UIState = {
   theme: 'light',
 };
 
-export const uiReducer = createReducer(initialState);
+export const uiReducer = createReducer(
+  initialState,
+  on(toggleTheme, (state) => ({
+    ...state,
+    theme: state.theme === 'light' ? 'dark' : 'light'
+  })),
+  on(setTheme, (state, { theme }) => ({
+    ...state,
+    theme
+  }))
+);

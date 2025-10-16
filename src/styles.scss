@@ -37,6 +37,43 @@
   --glass-dark-shadow: 0 8px 32px 0 rgba(30, 58, 138, 0.37);
 }
 
+/* Dark Mode Variables */
+[data-theme="dark"] {
+  /* Dark Mode Brand Colors */
+  --anarchy-gold: #F4D03F;
+  --anarchy-gold-light: #F7DC6F;
+  --anarchy-gold-dark: #D4AF37;
+  
+  --anarchy-blue: #60A5FA;
+  --anarchy-blue-light: #93C5FD;
+  --anarchy-blue-dark: #3B82F6;
+  
+  --anarchy-grey: #D1D5DB;
+  --anarchy-grey-light: #E5E7EB;
+  --anarchy-grey-dark: #9CA3AF;
+  
+  --anarchy-white: #1F2937;
+  --anarchy-off-white: #111827;
+  
+  /* Dark Mode Glassmorphism */
+  --glass-bg: rgba(31, 41, 55, 0.3);
+  --glass-border: rgba(75, 85, 99, 0.3);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  
+  /* Dark Mode Glass Cards */
+  --glass-card: rgba(31, 41, 55, 0.4);
+  
+  /* Dark Mode Backgrounds */
+  --bg-primary: #111827;
+  --bg-secondary: #1F2937;
+  --bg-tertiary: #374151;
+  
+  /* Dark Mode Text */
+  --text-primary: #F9FAFB;
+  --text-secondary: #D1D5DB;
+  --text-tertiary: #9CA3AF;
+}
+
 /* Brand Typography */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
@@ -112,6 +149,13 @@ body {
   color: var(--anarchy-grey-dark);
   overflow-x: hidden; /* Prevent horizontal scroll */
   min-height: 100vh;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Dark Mode Body */
+[data-theme="dark"] body {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  color: var(--text-primary);
 }
 
 /* Brand Typography */
@@ -255,6 +299,18 @@ input, textarea, select {
 .mat-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+}
+
+/* Dark Mode Cards */
+[data-theme="dark"] .mat-card {
+  background: var(--glass-card);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .mat-card:hover {
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6);
 }
 
 @media (min-width: 768px) {

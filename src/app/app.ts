@@ -1,6 +1,6 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { RouterOutlet, RouterModule, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
@@ -9,11 +9,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { AppState } from './core/store/app.reducer';
 import { selectCurrentUser, selectIsAuthenticated } from './core/store/auth/auth.selectors';
+import { selectTheme } from './core/store/ui/ui.selectors';
 import { AuthService } from './core/services/auth.service';
 import { ChangePasswordDialogComponent } from './shared/components/change-password-dialog/change-password-dialog.component';
+import { toggleTheme } from './core/store/ui/ui.actions';
 
 @Component({
   selector: 'app-root',
@@ -42,6 +44,12 @@ import { ChangePasswordDialogComponent } from './shared/components/change-passwo
         <span class="app-title tablet-up">School Entrance Exam System</span>
         
         <span class="spacer"></span>
+        
+        <!-- Dark Mode Toggle Button -->
+        <button mat-icon-button (click)="toggleDarkMode()" class="theme-toggle-button" 
+                [attr.aria-label]="(theme$ | async) === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
+          <mat-icon>{{ (theme$ | async) === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+        </button>
         
         <!-- Mobile: Show user initials, Desktop: Show full name -->
         <span *ngIf="currentUser$ | async as user" class="user-info">
@@ -193,15 +201,24 @@ import { ChangePasswordDialogComponent } from './shared/components/change-passwo
       color: var(--anarchy-grey); /* Brand color */
     }
 
-    .menu-button, .user-menu-button {
+    .menu-button, .user-menu-button, .theme-toggle-button {
       min-width: 44px; /* Touch-friendly */
       min-height: 44px;
       border-radius: 12px; /* Branded radius */
       color: var(--anarchy-blue); /* Brand color */
     }
 
-    .menu-button:hover, .user-menu-button:hover {
+    .menu-button:hover, .user-menu-button:hover, .theme-toggle-button:hover {
       background: rgba(30, 58, 138, 0.1); /* Brand color background */
+    }
+
+    .theme-toggle-button {
+      margin-right: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle-button:hover {
+      transform: rotate(180deg);
     }
 
     .spacer {
@@ -440,31 +457,75 @@ import { ChangePasswordDialogComponent } from './shared/components/change-passwo
     }
   `]
 })
-export class App {
+export class App implements OnInit, OnDestroy {
   @ViewChild('sidenav') sidenav!: MatSidenav;
   currentUser$: Observable<any>;
   isAuthenticated$: Observable<boolean>;
+  theme$: Observable<'light' | 'dark'>;
   sidenavOpen = true;
   isMobile = false;
+  private themeSubscription?: Subscription;
 
   constructor(
     private store: Store<AppState>,
     private authService: AuthService,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.currentUser$ = this.store.select(selectCurrentUser);
     this.isAuthenticated$ = this.store.select(selectIsAuthenticated);
+    this.theme$ = this.store.select(selectTheme);
     
     // Mobile detection
     this.checkScreenSize();
-    window.addEventListener('resize', () => this.checkScreenSize());
+    if (isPlatformBrowser(this.platformId)) {
+      window.addEventListener('resize', () => this.checkScreenSize());
+    }
+  }
+
+  ngOnInit() {
+    // Initialize theme from localStorage
+    if (isPlatformBrowser(this.platformId)) {
+      const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' || 'light';
+      this.store.dispatch({ type: '[UI] Set Theme', theme: savedTheme });
+      this.applyTheme(savedTheme);
+    }
+
+    // Subscribe to theme changes
+    this.themeSubscription = this.theme$.subscribe(theme => {
+      if (isPlatformBrowser(this.platformId)) {
+        this.applyTheme(theme);
+        localStorage.setItem('theme', theme);
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
+    if (isPlatformBrowser(this.platformId)) {
+      window.removeEventListener('resize', () => this.checkScreenSize());
+    }
   }
 
   checkScreenSize() {
-    this.isMobile = window.innerWidth < 768;
-    if (this.isMobile) {
-      this.sidenavOpen = false;
+    if (isPlatformBrowser(this.platformId)) {
+      this.isMobile = window.innerWidth < 768;
+      if (this.isMobile) {
+        this.sidenavOpen = false;
+      }
+    }
+  }
+
+  toggleDarkMode() {
+    this.store.dispatch(toggleTheme());
+  }
+
+  private applyTheme(theme: 'light' | 'dark') {
+    if (isPlatformBrowser(this.platformId)) {
+      document.documentElement.setAttribute('data-theme', theme);
     }
   }
 
