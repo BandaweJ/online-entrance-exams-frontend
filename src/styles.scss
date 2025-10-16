@@ -309,9 +309,162 @@ input, textarea, select {
   color: var(--text-primary);
 }
 
-[data-theme="dark"] .mat-card:hover {
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6);
-}
+    [data-theme="dark"] .mat-card:hover {
+      box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6);
+    }
+
+    /* Enhanced Snackbar Styles */
+    .mat-mdc-snack-bar-container {
+      border-radius: 12px !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+      backdrop-filter: blur(10px) !important;
+      -webkit-backdrop-filter: blur(10px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      max-width: 400px !important;
+      min-width: 300px !important;
+    }
+
+    .mat-mdc-snack-bar-container .mat-mdc-snack-bar-label {
+      font-family: 'Inter', sans-serif !important;
+      font-weight: 500 !important;
+      font-size: 14px !important;
+      line-height: 1.4 !important;
+    }
+
+    .mat-mdc-snack-bar-container .mat-mdc-button {
+      font-family: 'Inter', sans-serif !important;
+      font-weight: 600 !important;
+      font-size: 12px !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.5px !important;
+      border-radius: 8px !important;
+      min-width: 60px !important;
+    }
+
+    /* Success Snackbar */
+    .success-snackbar {
+      background: linear-gradient(135deg, #4caf50 0%, #45a049 100%) !important;
+      color: white !important;
+    }
+
+    .success-snackbar .mat-mdc-button {
+      color: white !important;
+      background: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .success-snackbar .mat-mdc-button:hover {
+      background: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    /* Error Snackbar */
+    .error-snackbar {
+      background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%) !important;
+      color: white !important;
+    }
+
+    .error-snackbar .mat-mdc-button {
+      color: white !important;
+      background: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .error-snackbar .mat-mdc-button:hover {
+      background: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    /* Warning Snackbar */
+    .warning-snackbar {
+      background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%) !important;
+      color: white !important;
+    }
+
+    .warning-snackbar .mat-mdc-button {
+      color: white !important;
+      background: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .warning-snackbar .mat-mdc-button:hover {
+      background: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    /* Info Snackbar */
+    .info-snackbar {
+      background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%) !important;
+      color: white !important;
+    }
+
+    .info-snackbar .mat-mdc-button {
+      color: white !important;
+      background: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .info-snackbar .mat-mdc-button:hover {
+      background: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    /* Critical Error Snackbar */
+    .critical-error {
+      background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%) !important;
+      animation: pulse 2s infinite !important;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+
+    /* Auth Error Snackbar */
+    .auth-error {
+      background: linear-gradient(135deg, #ff5722 0%, #e64a19 100%) !important;
+    }
+
+    /* Validation Error Snackbar */
+    .validation-error {
+      background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%) !important;
+    }
+
+    /* Not Found Error Snackbar */
+    .not-found-error {
+      background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%) !important;
+    }
+
+    /* Network Error Snackbar */
+    .network-error {
+      background: linear-gradient(135deg, #ff5722 0%, #e64a19 100%) !important;
+      animation: pulse 2s infinite !important;
+    }
+
+    /* Critical Error Snackbar */
+    .critical-error {
+      background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%) !important;
+      animation: shake 0.5s ease-in-out !important;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    /* Dark Mode Snackbar Adjustments */
+    [data-theme="dark"] .mat-mdc-snack-bar-container {
+      background: var(--glass-card) !important;
+      border: 1px solid var(--glass-border) !important;
+      box-shadow: var(--glass-shadow) !important;
+    }
+
+    [data-theme="dark"] .mat-mdc-snack-bar-container .mat-mdc-snack-bar-label {
+      color: var(--text-primary) !important;
+    }
+
+    [data-theme="dark"] .mat-mdc-snack-bar-container .mat-mdc-button {
+      color: var(--text-primary) !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    [data-theme="dark"] .mat-mdc-snack-bar-container .mat-mdc-button:hover {
+      background: rgba(255, 255, 255, 0.2) !important;
+    }
 
 @media (min-width: 768px) {
   .mat-card {

@@ -16,6 +16,8 @@ import { selectTheme } from './core/store/ui/ui.selectors';
 import { AuthService } from './core/services/auth.service';
 import { ChangePasswordDialogComponent } from './shared/components/change-password-dialog/change-password-dialog.component';
 import { toggleTheme } from './core/store/ui/ui.actions';
+// import { GlobalLoadingComponent } from './shared/components/global-loading/global-loading.component';
+// import { ErrorBoundaryComponent } from './shared/components/error-boundary/error-boundary.component';
 
 @Component({
   selector: 'app-root',
@@ -30,6 +32,8 @@ import { toggleTheme } from './core/store/ui/ui.actions';
     MatIconModule,
     MatButtonModule,
     MatMenuModule
+    // GlobalLoadingComponent,
+    // ErrorBoundaryComponent
   ],
   template: `
     <div class="app-container">

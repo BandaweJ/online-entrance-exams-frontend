@@ -9,8 +9,13 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 import { MatDividerModule } from '@angular/material/divider';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
 import { ResultsService } from '../../core/services/results.service';
 import { Result, ExamStats } from '../../models/result.model';
+import { AppState } from '../../core/store/app.reducer';
+import { selectCurrentUser } from '../../core/store/auth/auth.selectors';
+import { User } from '../../models/user.model';
 
 @Component({
   selector: 'app-results-screen',
@@ -96,7 +101,8 @@ import { Result, ExamStats } from '../../models/result.model';
           <!-- Performance Overview Tab -->
           <mat-tab label="Performance Overview">
             <div class="tab-content">
-              <div class="performance-grid" *ngIf="examStats">
+              <!-- Admin-only exam statistics -->
+              <div class="performance-grid" *ngIf="examStats && (currentUser$ | async)?.role === 'admin'">
                 <mat-card class="stat-card">
                   <mat-card-content>
                     <div class="stat-content">
@@ -146,7 +152,8 @@ import { Result, ExamStats } from '../../models/result.model';
                 </mat-card>
               </div>
 
-              <div class="performance-comparison">
+              <!-- Performance comparison (admin only) -->
+              <div class="performance-comparison" *ngIf="(currentUser$ | async)?.role === 'admin'">
                 <h3>Your Performance vs Class Average</h3>
                 <div class="comparison-bar">
                   <div class="bar-section">
@@ -163,6 +170,16 @@ import { Result, ExamStats } from '../../models/result.model';
                     </div>
                     <span>{{ examStats?.averagePercentage | number:'1.2-2' }}%</span>
                   </div>
+                </div>
+              </div>
+
+              <!-- Student-only content -->
+              <div class="student-performance" *ngIf="(currentUser$ | async)?.role === 'student'">
+                <h3>Your Performance Summary</h3>
+                <p>You scored {{ result.percentage | number:'1.2-2' }}% on this exam.</p>
+                <div class="performance-message" [class]="result.isPassed ? 'passed' : 'failed'">
+                  <mat-icon>{{ result.isPassed ? 'check_circle' : 'cancel' }}</mat-icon>
+                  <span>{{ result.isPassed ? 'Congratulations! You passed the exam.' : 'You did not pass this exam. Keep studying!' }}</span>
                 </div>
               </div>
             </div>
@@ -430,6 +447,49 @@ import { Result, ExamStats } from '../../models/result.model';
       background-color: #4caf50;
     }
 
+    .student-performance {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .student-performance h3 {
+      margin: 0 0 16px 0;
+      color: #333;
+    }
+
+    .student-performance p {
+      margin: 0 0 16px 0;
+      color: #666;
+      font-size: 16px;
+    }
+
+    .performance-message {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+
+    .performance-message.passed {
+      background-color: #e8f5e8;
+      color: #4caf50;
+    }
+
+    .performance-message.failed {
+      background-color: #ffebee;
+      color: #f44336;
+    }
+
+    .performance-message mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+
     .question-review {
       margin-top: 20px;
     }
@@ -595,12 +655,16 @@ import { Result, ExamStats } from '../../models/result.model';
 export class ResultsScreenComponent implements OnInit {
   result: Result | null = null;
   examStats: ExamStats | null = null;
+  currentUser$: Observable<User | null>;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private resultsService: ResultsService
-  ) {}
+    private resultsService: ResultsService,
+    private store: Store<AppState>
+  ) {
+    this.currentUser$ = this.store.select(selectCurrentUser);
+  }
 
   ngOnInit() {
     const resultId = this.route.snapshot.paramMap.get('id');
@@ -614,7 +678,12 @@ export class ResultsScreenComponent implements OnInit {
       next: (result) => {
         this.result = result;
         if (result.examId) {
-          this.loadExamStats(result.examId);
+          // Only load exam stats if user is admin
+          this.currentUser$.subscribe(user => {
+            if (user?.role === 'admin') {
+              this.loadExamStats(result.examId);
+            }
+          }).unsubscribe();
         }
       },
       error: (error) => {
@@ -630,6 +699,7 @@ export class ResultsScreenComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading exam stats:', error);
+        // Don't show error to students - this is expected for non-admin users
       }
     });
   }
