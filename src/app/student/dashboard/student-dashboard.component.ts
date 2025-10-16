@@ -9,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Store } from '@ngrx/store';
 import { AppState } from '../../core/store/app.reducer';
 import { selectCurrentUser } from '../../core/store/auth/auth.selectors';
@@ -921,7 +922,8 @@ export class StudentDashboardComponent implements OnInit {
     private attemptsService: AttemptsService,
     private resultsService: ResultsService,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {
     this.currentUser$ = this.store.select(selectCurrentUser);
   }
@@ -1033,25 +1035,45 @@ export class StudentDashboardComponent implements OnInit {
       this.router.navigate(['/student/results', existingResult.id]);
     } else {
       console.log('No existing result found, refreshing results...');
-      // Refresh results to get the latest data
-      this.resultsService.getStudentResults().subscribe({
-        next: (results: Result[]) => {
-          this.results = results;
-          const foundResult = results.find(result => result.attemptId === attempt.id);
-          if (foundResult) {
-            console.log('Found result after refresh:', foundResult.id);
-            this.router.navigate(['/student/results', foundResult.id]);
-          } else {
-            console.error('Result still not found after refresh');
-            alert('Result not found. The exam may still be processing. Please try again in a few moments.');
-          }
-        },
-        error: (error) => {
-          console.error('Error refreshing results:', error);
-          alert('Error loading results. Please try again.');
-        }
-      });
+      this.refreshResultsAndNavigate(attempt.id, 0);
     }
+  }
+
+  private refreshResultsAndNavigate(attemptId: string, retryCount: number) {
+    const maxRetries = 3;
+    const retryDelay = 2000; // 2 seconds
+
+    this.resultsService.getStudentResults().subscribe({
+      next: (results: Result[]) => {
+        this.results = results;
+        const foundResult = results.find(result => result.attemptId === attemptId);
+        
+        if (foundResult) {
+          console.log('Found result after refresh:', foundResult.id);
+          this.router.navigate(['/student/results', foundResult.id]);
+        } else if (retryCount < maxRetries) {
+          console.log(`Result not found, retrying in ${retryDelay}ms... (attempt ${retryCount + 1}/${maxRetries})`);
+          setTimeout(() => {
+            this.refreshResultsAndNavigate(attemptId, retryCount + 1);
+          }, retryDelay);
+        } else {
+          console.error('Result still not found after all retries');
+          this.snackBar.open(
+            'Result is still being processed. Please wait a few minutes and try again, or contact support if the issue persists.',
+            'Close',
+            { duration: 8000, panelClass: ['warning-snackbar'] }
+          );
+        }
+      },
+      error: (error) => {
+        console.error('Error refreshing results:', error);
+        this.snackBar.open(
+          'Error loading results. Please try again.',
+          'Close',
+          { duration: 5000, panelClass: ['error-snackbar'] }
+        );
+      }
+    });
   }
 
   viewDetailedResult(resultId: string) {
