@@ -142,9 +142,12 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
                       <mat-icon>close</mat-icon>
                       Close
                     </button>
-                    <button mat-menu-item (click)="deleteExam(exam)" class="delete-action">
+                    <button mat-menu-item (click)="deleteExam(exam)" 
+                            [disabled]="exam.status === 'published'"
+                            class="delete-action">
                       <mat-icon>delete</mat-icon>
-                      Delete
+                      <span *ngIf="exam.status === 'published'">Delete (Close first)</span>
+                      <span *ngIf="exam.status !== 'published'">Delete</span>
                     </button>
                   </mat-menu>
                 </td>
@@ -188,9 +191,12 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
                       <mat-icon>close</mat-icon>
                       Close
                     </button>
-                    <button mat-menu-item (click)="deleteExam(exam)" class="delete-action">
+                    <button mat-menu-item (click)="deleteExam(exam)" 
+                            [disabled]="exam.status === 'published'"
+                            class="delete-action">
                       <mat-icon>delete</mat-icon>
-                      Delete
+                      <span *ngIf="exam.status === 'published'">Delete (Close first)</span>
+                      <span *ngIf="exam.status !== 'published'">Delete</span>
                     </button>
                   </mat-menu>
                 </div>
@@ -347,6 +353,11 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
 
     .delete-action {
       color: #f44336;
+    }
+
+    .delete-action:disabled {
+      color: #ccc;
+      cursor: not-allowed;
     }
 
     .no-data {
@@ -628,6 +639,16 @@ export class ExamsListComponent implements OnInit, OnDestroy {
   }
 
   deleteExam(exam: Exam) {
+    // Check if exam is published
+    if (exam.status === 'published') {
+      this.snackBar.open(
+        'Cannot delete published exam. Please close the exam first, then you can delete it.',
+        'Close',
+        { duration: 5000, panelClass: ['warning-snackbar'] }
+      );
+      return;
+    }
+
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       data: {
         title: 'Delete Exam',
@@ -646,7 +667,15 @@ export class ExamsListComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.error('Error deleting exam:', error);
-            this.snackBar.open('Error deleting exam', 'Close', { duration: 3000 });
+            if (error.error?.message?.includes('Cannot delete published exam')) {
+              this.snackBar.open(
+                'Cannot delete published exam. Please close the exam first.',
+                'Close',
+                { duration: 5000, panelClass: ['error-snackbar'] }
+              );
+            } else {
+              this.snackBar.open('Error deleting exam', 'Close', { duration: 3000 });
+            }
           }
         });
       }
