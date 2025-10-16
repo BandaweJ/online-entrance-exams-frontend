@@ -702,8 +702,10 @@ export class ResultsListComponent implements OnInit {
 
   private loadResults() {
     this.isLoading = true;
+    console.log('Loading results for admin...');
     this.resultsService.getResults().subscribe({
       next: (results) => {
+        console.log('Results loaded:', results);
         this.results = results;
         this.filteredResults = [...results];
         this.isLoading = false;
