@@ -79,7 +79,7 @@ export interface DashboardSummary {
   providedIn: 'root'
 })
 export class AnalyticsService {
-  private apiUrl = `${environment.apiUrl}/api/analytics`;
+  private apiUrl = `${environment.apiUrl}/analytics`;
 
   constructor(private http: HttpClient) {}
 
