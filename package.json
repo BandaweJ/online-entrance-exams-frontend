@@ -9,7 +9,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "render:build": "npm run build:prod",
-    "render:start": "npx serve -s dist/frontend -l 4200"
+    "render:start": "npx serve -s dist/frontend -l 4200",
+    "vercel-build": "npm run build:prod"
   },
   "prettier": {
     "printWidth": 100,
