@@ -28,6 +28,12 @@
       "dest": "/index.html"
     }
   ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*\\.js)",
