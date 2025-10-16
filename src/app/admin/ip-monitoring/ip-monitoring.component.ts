@@ -650,7 +650,15 @@ export class IpMonitoringComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error loading activities:', error);
-          this.snackBar.open('Error loading activities', 'Close', { duration: 3000 });
+          // Handle 400/401/403 errors gracefully
+          if (error.status === 400 || error.status === 401 || error.status === 403) {
+            this.snackBar.open('Access denied. Admin privileges required.', 'Close', { duration: 5000 });
+            this.activities = [];
+            this.dataSource.data = [];
+            this.totalActivities = 0;
+          } else {
+            this.snackBar.open('Error loading activities', 'Close', { duration: 3000 });
+          }
           this.loading = false;
         }
       });
@@ -666,6 +674,11 @@ export class IpMonitoringComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error loading suspicious IPs:', error);
+          // Handle 400/401/403 errors gracefully
+          if (error.status === 400 || error.status === 401 || error.status === 403) {
+            this.suspiciousIps = [];
+            this.suspiciousIpsDataSource.data = [];
+          }
         }
       });
   }
