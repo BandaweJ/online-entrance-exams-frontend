@@ -264,12 +264,22 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
       -webkit-backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.2);
       box-shadow: var(--glass-shadow);
+      position: relative;
     }
 
     .brand-section {
       display: flex;
       align-items: center;
       gap: 20px;
+      flex: 1;
+      min-width: 0; /* Allow text to wrap if needed */
+    }
+
+    .create-button {
+      flex-shrink: 0;
+      margin-left: 20px;
+      z-index: 10;
+      position: relative;
     }
 
     .header-text h1 {
@@ -445,6 +455,23 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
       font-size: 0.875rem;
     }
 
+    /* Medium screens - prevent overlap */
+    @media (max-width: 1024px) and (min-width: 769px) {
+      .exams-header {
+        padding: 16px;
+      }
+
+      .header-text h1 {
+        font-size: 1.75rem;
+      }
+
+      .create-button {
+        margin-left: 16px;
+        padding: 8px 16px;
+        font-size: 14px;
+      }
+    }
+
     /* Mobile header adjustments */
     @media (max-width: 768px) {
       .exams-container {
@@ -458,14 +485,25 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
         margin-bottom: 20px;
       }
 
-      .exams-header h1 {
-        font-size: 1.5rem;
+      .brand-section {
+        flex-direction: column;
         text-align: center;
+        gap: 12px;
+      }
+
+      .header-text h1 {
+        font-size: 1.5rem;
+        margin: 0 0 4px 0;
+      }
+
+      .header-text p {
+        font-size: 0.875rem;
       }
 
       .create-button {
         width: 100%;
         height: 48px;
+        margin-left: 0;
       }
     }
 
