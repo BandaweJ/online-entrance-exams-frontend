@@ -43,6 +43,10 @@ export const adminRoutes: Routes = [
     loadComponent: () => import('./results/results-list.component').then(m => m.ResultsListComponent)
   },
   {
+    path: 'results/:id',
+    loadComponent: () => import('../student/exam/results-screen.component').then(m => m.ResultsScreenComponent)
+  },
+  {
     path: 'profile',
     loadComponent: () => import('../shared/components/user-profile/user-profile.component').then(m => m.UserProfileComponent)
   },
@@ -53,5 +57,9 @@ export const adminRoutes: Routes = [
   {
     path: 'users/create',
     loadComponent: () => import('./users/user-create.component').then(m => m.UserCreateComponent)
+  },
+  {
+    path: 'ip-monitoring',
+    loadComponent: () => import('./ip-monitoring/ip-monitoring.component').then(m => m.IpMonitoringComponent)
   }
 ];

@@ -18,6 +18,7 @@ import { StudentService } from '../../core/services/student.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { StudentDetailDialogComponent } from '../../shared/components/student-detail-dialog/student-detail-dialog.component';
 import { StudentEditDialogComponent } from '../../shared/components/student-edit-dialog/student-edit-dialog.component';
+import { SchoolLogoComponent } from '../../shared/components/school-logo/school-logo.component';
 
 @Component({
   selector: 'app-students-list',
@@ -36,13 +37,20 @@ import { StudentEditDialogComponent } from '../../shared/components/student-edit
     MatProgressSpinnerModule,
     MatFormFieldModule,
     MatInputModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    SchoolLogoComponent
   ],
   template: `
     <div class="students-container">
       <div class="students-header">
-        <h1>Student Management</h1>
-        <button mat-raised-button color="primary" routerLink="/admin/students/create">
+        <div class="brand-section">
+          <app-school-logo size="medium"></app-school-logo>
+          <div class="header-text">
+            <h1 class="brand-heading">Student Management</h1>
+            <p class="brand-subheading">Manage student accounts and information</p>
+          </div>
+        </div>
+        <button mat-raised-button routerLink="/admin/students/create" class="btn-brand-primary">
           <mat-icon>person_add</mat-icon>
           Add Student
         </button>
@@ -311,6 +319,8 @@ import { StudentEditDialogComponent } from '../../shared/components/student-edit
       padding: 20px;
       max-width: 1200px;
       margin: 0 auto;
+      background: linear-gradient(135deg, var(--anarchy-off-white) 0%, #E5E7EB 100%);
+      min-height: 100vh;
     }
 
     .students-header {
@@ -318,6 +328,34 @@ import { StudentEditDialogComponent } from '../../shared/components/student-edit
       justify-content: space-between;
       align-items: center;
       margin-bottom: 30px;
+      padding: 20px;
+      background: var(--glass-card);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: var(--glass-shadow);
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .header-text h1 {
+      margin: 0 0 8px 0;
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--anarchy-blue);
+    }
+
+    .header-text p {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      color: var(--anarchy-grey);
+      font-size: 1rem;
     }
 
     .students-header h1 {
@@ -333,11 +371,18 @@ import { StudentEditDialogComponent } from '../../shared/components/student-edit
     }
 
     .stat-card {
-      transition: transform 0.2s ease-in-out;
+      background: var(--glass-card);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: var(--glass-shadow);
+      transition: all 0.3s ease;
     }
 
     .stat-card:hover {
-      transform: translateY(-2px);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
     }
 
     .stat-content {
@@ -350,20 +395,23 @@ import { StudentEditDialogComponent } from '../../shared/components/student-edit
       font-size: 32px;
       width: 32px;
       height: 32px;
-      color: #1976d2;
+      color: var(--anarchy-gold);
+      filter: drop-shadow(0 2px 4px rgba(212, 175, 55, 0.3));
     }
 
     .stat-info h3 {
       margin: 0;
       font-size: 24px;
       font-weight: bold;
-      color: #333;
+      color: var(--anarchy-blue);
+      text-shadow: 0 1px 2px rgba(30, 58, 138, 0.2);
     }
 
     .stat-info p {
       margin: 0;
-      color: #666;
+      color: var(--anarchy-grey);
       font-size: 14px;
+      font-weight: 500;
     }
 
     .table-header {

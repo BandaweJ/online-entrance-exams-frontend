@@ -3,6 +3,95 @@
 /* Angular Material Theme */
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 
+/* ========================================
+   ANARPHY HIGH SCHOOL BRANDING SYSTEM
+   ======================================== */
+
+/* Brand Color Palette */
+:root {
+  /* Primary Brand Colors */
+  --anarchy-gold: #D4AF37;
+  --anarchy-gold-light: #E6C547;
+  --anarchy-gold-dark: #B8941F;
+  
+  --anarchy-blue: #1E3A8A;
+  --anarchy-blue-light: #3B82F6;
+  --anarchy-blue-dark: #1E40AF;
+  
+  --anarchy-grey: #6B7280;
+  --anarchy-grey-light: #9CA3AF;
+  --anarchy-grey-dark: #374151;
+  
+  --anarchy-white: #FFFFFF;
+  --anarchy-off-white: #F8FAFC;
+  
+  /* Glassmorphism Variables */
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --glass-backdrop: blur(8px);
+  
+  /* Dark Glassmorphism */
+  --glass-dark-bg: rgba(30, 58, 138, 0.1);
+  --glass-dark-border: rgba(30, 58, 138, 0.2);
+  --glass-dark-shadow: 0 8px 32px 0 rgba(30, 58, 138, 0.37);
+}
+
+/* Brand Typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+/* Glassmorphism Utility Classes */
+.glass-effect {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 16px;
+}
+
+.glass-dark {
+  background: var(--glass-dark-bg);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-dark-border);
+  box-shadow: var(--glass-dark-shadow);
+  border-radius: 16px;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  border-radius: 20px;
+}
+
+/* Brand Gradients */
+.brand-gradient {
+  background: linear-gradient(135deg, var(--anarchy-gold) 0%, var(--anarchy-blue) 100%);
+}
+
+.brand-gradient-reverse {
+  background: linear-gradient(135deg, var(--anarchy-blue) 0%, var(--anarchy-gold) 100%);
+}
+
+.brand-gradient-soft {
+  background: linear-gradient(135deg, var(--anarchy-gold-light) 0%, var(--anarchy-blue-light) 100%);
+}
+
+/* Brand Text Colors */
+.text-brand-gold { color: var(--anarchy-gold); }
+.text-brand-blue { color: var(--anarchy-blue); }
+.text-brand-grey { color: var(--anarchy-grey); }
+
+/* Brand Background Colors */
+.bg-brand-gold { background-color: var(--anarchy-gold); }
+.bg-brand-blue { background-color: var(--anarchy-blue); }
+.bg-brand-grey { background-color: var(--anarchy-grey); }
+.bg-brand-white { background-color: var(--anarchy-white); }
+
 /* Mobile-First Global Styles */
 * {
   margin: 0;
@@ -17,11 +106,58 @@ html {
 }
 
 body {
-  font-family: 'Roboto', sans-serif;
-  background-color: #f5f5f5;
+  font-family: 'Inter', 'Roboto', sans-serif;
+  background: linear-gradient(135deg, var(--anarchy-off-white) 0%, #E5E7EB 100%);
   line-height: 1.6;
-  color: #333;
+  color: var(--anarchy-grey-dark);
   overflow-x: hidden; /* Prevent horizontal scroll */
+  min-height: 100vh;
+}
+
+/* Brand Typography */
+.brand-heading {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  color: var(--anarchy-blue);
+}
+
+.brand-subheading {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  color: var(--anarchy-grey);
+}
+
+/* Brand Buttons */
+.btn-brand-primary {
+  background: var(--brand-gradient);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+}
+
+.btn-brand-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+.btn-brand-secondary {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop);
+  color: var(--anarchy-blue);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-brand-secondary:hover {
+  background: var(--glass-dark-bg);
+  transform: translateY(-1px);
 }
 
 /* Mobile-first responsive typography */
@@ -104,19 +240,40 @@ input, textarea, select {
   border-radius: 4px;
 }
 
-/* Mobile-optimized cards */
+/* Brand-optimized cards with glassmorphism */
 .mat-card {
   margin: 8px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 16px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  transition: all 0.3s ease;
+}
+
+.mat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
 }
 
 @media (min-width: 768px) {
   .mat-card {
     margin: 16px;
-    border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    border-radius: 20px;
   }
+}
+
+/* Brand-specific card variants */
+.mat-card.brand-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.mat-card.brand-card-dark {
+  background: linear-gradient(135deg, rgba(30, 58, 138, 0.2) 0%, rgba(30, 58, 138, 0.1) 100%);
+  border: 1px solid rgba(30, 58, 138, 0.3);
+  color: var(--anarchy-white);
 }
 
 /* Mobile-friendly spacing */

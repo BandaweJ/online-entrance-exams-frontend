@@ -37,7 +37,7 @@ import { Result, ExamStats } from '../../models/result.model';
         <div class="header-actions">
           <button mat-raised-button color="primary" (click)="goToDashboard()">
             <mat-icon>dashboard</mat-icon>
-            Back to Dashboard
+            {{ getBackButtonText() }}
           </button>
         </div>
       </div>
@@ -649,7 +649,18 @@ export class ResultsScreenComponent implements OnInit {
   }
 
   goToDashboard() {
-    this.router.navigate(['/student/dashboard']);
+    // Check if we're in admin context by looking at the current URL
+    const currentUrl = this.router.url;
+    if (currentUrl.includes('/admin/')) {
+      this.router.navigate(['/admin/results']);
+    } else {
+      this.router.navigate(['/student/dashboard']);
+    }
+  }
+
+  getBackButtonText(): string {
+    const currentUrl = this.router.url;
+    return currentUrl.includes('/admin/') ? 'Back to Results' : 'Back to Dashboard';
   }
 
   getExamYear(exam: any): string {

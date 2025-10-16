@@ -15,6 +15,7 @@ import { ExamService } from '../../core/services/exam.service';
 import { StudentService } from '../../core/services/student.service';
 import { ResultsService } from '../../core/services/results.service';
 import { Observable } from 'rxjs';
+import { SchoolLogoComponent } from '../../shared/components/school-logo/school-logo.component';
 
 interface DashboardStats {
   totalExams: number;
@@ -44,11 +45,20 @@ interface RecentActivity {
     MatGridListModule,
     MatTableModule,
     MatChipsModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    SchoolLogoComponent
   ],
   template: `
     <div class="dashboard-container">
-      <h1>Admin Dashboard</h1>
+      <div class="dashboard-header">
+        <div class="brand-section">
+          <app-school-logo size="medium"></app-school-logo>
+          <div class="header-text">
+            <h1 class="brand-heading">Admin Dashboard</h1>
+            <p class="brand-subheading">Exam Management System</p>
+          </div>
+        </div>
+      </div>
       
       <!-- Stats Cards -->
       <div class="stats-grid" *ngIf="!(isLoading$ | async); else loading">
@@ -129,21 +139,25 @@ interface RecentActivity {
           </mat-card-header>
           <mat-card-content>
             <div class="action-buttons">
-              <button mat-raised-button color="primary" routerLink="/admin/exams/create">
+              <button mat-raised-button routerLink="/admin/exams/create" class="btn-brand-primary">
                 <mat-icon>add</mat-icon>
                 Create New Exam
               </button>
-              <button mat-raised-button color="accent" routerLink="/admin/students/create">
+              <button mat-raised-button routerLink="/admin/students/create" class="btn-brand-secondary">
                 <mat-icon>person_add</mat-icon>
                 Add Student
               </button>
-              <button mat-raised-button routerLink="/admin/exams">
+              <button mat-raised-button routerLink="/admin/exams" class="btn-brand-primary">
                 <mat-icon>quiz</mat-icon>
                 Manage Exams
               </button>
-              <button mat-raised-button routerLink="/admin/students">
+              <button mat-raised-button routerLink="/admin/students" class="btn-brand-primary">
                 <mat-icon>people</mat-icon>
                 Manage Students
+              </button>
+              <button mat-raised-button routerLink="/admin/ip-monitoring" class="btn-brand-secondary">
+                <mat-icon>security</mat-icon>
+                IP Monitoring
               </button>
             </div>
           </mat-card-content>
@@ -159,72 +173,121 @@ interface RecentActivity {
     </div>
   `,
   styles: [`
+    /* Mobile-first base styles */
     .dashboard-container {
-      padding: 20px;
+      padding: 12px;
       max-width: 1200px;
       margin: 0 auto;
+      background: linear-gradient(135deg, var(--anarchy-off-white) 0%, #E5E7EB 100%);
+      min-height: 100vh;
     }
 
-    .dashboard-container h1 {
-      margin-bottom: 30px;
-      color: #1976d2;
+    .dashboard-header {
+      margin-bottom: 20px; /* Mobile-first: smaller margin */
+      padding: 16px; /* Mobile-first: smaller padding */
+      background: var(--glass-card);
+      border-radius: 16px; /* Mobile-first: smaller radius */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: var(--glass-shadow);
+    }
+
+    .brand-section {
+      display: flex;
+      flex-direction: column; /* Mobile-first: stacked layout */
+      align-items: center;
+      gap: 12px; /* Mobile-first: smaller gap */
+      text-align: center;
+    }
+
+    .header-text h1 {
+      margin: 0 0 6px 0; /* Mobile-first: smaller margin */
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem; /* Mobile-first: smaller font */
+      font-weight: 600;
+      color: var(--anarchy-blue);
+      line-height: 1.2;
+    }
+
+    .header-text p {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      color: var(--anarchy-grey);
+      font-size: 0.875rem; /* Mobile-first: smaller font */
+      line-height: 1.3;
     }
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-bottom: 30px;
+      grid-template-columns: repeat(2, 1fr); /* Mobile-first: 2 columns */
+      gap: 12px; /* Mobile-first: smaller gap */
+      margin-bottom: 20px; /* Mobile-first: smaller margin */
     }
 
     .stat-card {
-      transition: transform 0.2s ease-in-out;
+      background: var(--glass-card);
+      border-radius: 12px; /* Mobile-first: smaller radius */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: var(--glass-shadow);
+      transition: all 0.3s ease;
+      padding: 12px; /* Mobile-first: smaller padding */
     }
 
     .stat-card:hover {
-      transform: translateY(-2px);
+      transform: translateY(-2px); /* Mobile-first: smaller transform */
+      box-shadow: 0 8px 25px 0 rgba(31, 38, 135, 0.4);
     }
 
     .stat-content {
       display: flex;
+      flex-direction: column; /* Mobile-first: stacked layout */
       align-items: center;
-      gap: 16px;
+      gap: 8px; /* Mobile-first: smaller gap */
+      text-align: center;
     }
 
     .stat-icon {
-      font-size: 40px;
-      width: 40px;
-      height: 40px;
-      color: #1976d2;
+      font-size: 24px; /* Mobile-first: smaller icon */
+      width: 24px;
+      height: 24px;
+      color: var(--anarchy-gold);
+      filter: drop-shadow(0 2px 4px rgba(212, 175, 55, 0.3));
     }
 
     .stat-info h3 {
       margin: 0;
-      font-size: 32px;
+      font-size: 20px; /* Mobile-first: smaller font */
       font-weight: bold;
-      color: #333;
+      color: var(--anarchy-blue);
+      text-shadow: 0 1px 2px rgba(30, 58, 138, 0.2);
+      line-height: 1.1;
     }
 
     .stat-info p {
       margin: 0;
-      color: #666;
-      font-size: 14px;
+      color: var(--anarchy-grey);
+      font-size: 11px; /* Mobile-first: smaller font */
+      font-weight: 500;
+      line-height: 1.2;
     }
 
     .activity-section {
-      margin-bottom: 30px;
+      margin-bottom: 20px; /* Mobile-first: smaller margin */
     }
 
     .activity-list {
-      max-height: 300px;
+      max-height: 200px; /* Mobile-first: smaller height */
       overflow-y: auto;
     }
 
     .activity-item {
       display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 12px 0;
+      align-items: flex-start; /* Mobile-first: align to start */
+      gap: 10px; /* Mobile-first: smaller gap */
+      padding: 8px 0; /* Mobile-first: smaller padding */
       border-bottom: 1px solid #eee;
     }
 
@@ -233,9 +296,10 @@ interface RecentActivity {
     }
 
     .activity-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
+      font-size: 16px; /* Mobile-first: smaller icon */
+      width: 16px;
+      height: 16px;
+      margin-top: 2px; /* Mobile-first: small offset */
     }
 
     .activity-icon.success {
@@ -255,30 +319,35 @@ interface RecentActivity {
     }
 
     .activity-text {
-      margin: 0 0 4px 0;
-      font-size: 14px;
+      margin: 0 0 3px 0; /* Mobile-first: smaller margin */
+      font-size: 12px; /* Mobile-first: smaller font */
+      line-height: 1.3;
     }
 
     .activity-time {
-      font-size: 12px;
+      font-size: 10px; /* Mobile-first: smaller font */
       color: #666;
+      line-height: 1.2;
     }
 
     .quick-actions {
-      margin-bottom: 30px;
+      margin-bottom: 20px; /* Mobile-first: smaller margin */
     }
 
     .action-buttons {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
+      grid-template-columns: 1fr; /* Mobile-first: single column */
+      gap: 10px; /* Mobile-first: smaller gap */
     }
 
     .action-buttons button {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 12px 16px;
+      justify-content: center;
+      gap: 6px; /* Mobile-first: smaller gap */
+      padding: 10px 12px; /* Mobile-first: smaller padding */
+      height: 44px; /* Mobile-first: smaller height */
+      font-size: 13px; /* Mobile-first: smaller font */
     }
 
     .loading-container {
@@ -286,126 +355,249 @@ interface RecentActivity {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 40px;
+      padding: 30px; /* Mobile-first: smaller padding */
     }
 
     .loading-container p {
-      margin-top: 16px;
+      margin-top: 12px; /* Mobile-first: smaller margin */
       color: #666;
+      font-size: 13px; /* Mobile-first: smaller font */
     }
 
-    /* Mobile-specific styles */
-    @media (max-width: 768px) {
+    /* Small mobile devices (320px and up) */
+    @media (min-width: 320px) {
+      .header-text h1 {
+        font-size: 1.625rem;
+      }
+      
+      .header-text p {
+        font-size: 0.9rem;
+      }
+      
+      .stat-info h3 {
+        font-size: 22px;
+      }
+      
+      .stat-info p {
+        font-size: 12px;
+      }
+    }
+
+    /* Medium mobile devices (480px and up) */
+    @media (min-width: 480px) {
       .dashboard-container {
         padding: 16px;
       }
 
-      .dashboard-container h1 {
-        font-size: 1.5rem;
-        text-align: center;
-        margin-bottom: 20px;
+      .dashboard-header {
+        padding: 20px;
+        margin-bottom: 24px;
+        border-radius: 20px;
+      }
+
+      .brand-section {
+        flex-direction: row;
+        text-align: left;
+        gap: 16px;
+      }
+
+      .header-text h1 {
+        font-size: 1.75rem;
+        margin: 0 0 8px 0;
+      }
+
+      .header-text p {
+        font-size: 1rem;
       }
 
       .stats-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-        margin-bottom: 20px;
+        gap: 16px;
+        margin-bottom: 24px;
       }
 
       .stat-card {
-        padding: 12px;
+        padding: 16px;
+        border-radius: 16px;
       }
 
       .stat-content {
+        flex-direction: row;
+        text-align: left;
         gap: 12px;
       }
 
       .stat-icon {
-        font-size: 28px;
-        width: 28px;
-        height: 28px;
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
       }
 
       .stat-info h3 {
-        font-size: 20px;
+        font-size: 24px;
       }
 
       .stat-info p {
-        font-size: 12px;
+        font-size: 13px;
       }
 
       .activity-section, .quick-actions {
-        margin-bottom: 20px;
+        margin-bottom: 24px;
       }
 
-      .action-buttons {
-        grid-template-columns: 1fr;
-        gap: 12px;
-      }
-
-      .action-buttons button {
-        width: 100%;
-        height: 48px;
-        justify-content: center;
+      .activity-list {
+        max-height: 250px;
       }
 
       .activity-item {
-        padding: 8px 0;
+        align-items: center;
         gap: 12px;
+        padding: 10px 0;
       }
 
       .activity-icon {
         font-size: 18px;
         width: 18px;
         height: 18px;
+        margin-top: 0;
       }
 
       .activity-text {
         font-size: 13px;
+        margin: 0 0 4px 0;
       }
 
       .activity-time {
         font-size: 11px;
       }
+
+      .action-buttons {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .action-buttons button {
+        height: 48px;
+        font-size: 14px;
+        padding: 12px 16px;
+        gap: 8px;
+      }
     }
 
-    /* Small mobile devices */
-    @media (max-width: 480px) {
+    /* Tablet and up (768px and up) */
+    @media (min-width: 768px) {
       .dashboard-container {
-        padding: 12px;
+        padding: 20px;
+      }
+
+      .dashboard-header {
+        margin-bottom: 30px;
+        padding: 24px;
+      }
+
+      .brand-section {
+        gap: 20px;
+      }
+
+      .header-text h1 {
+        font-size: 2rem;
+        margin: 0 0 8px 0;
+      }
+
+      .header-text p {
+        font-size: 1.125rem;
       }
 
       .stats-grid {
-        grid-template-columns: 1fr;
-        gap: 8px;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .stat-card {
+        padding: 20px;
       }
 
       .stat-content {
-        gap: 8px;
+        gap: 16px;
       }
 
       .stat-icon {
-        font-size: 24px;
-        width: 24px;
-        height: 24px;
+        font-size: 40px;
+        width: 40px;
+        height: 40px;
       }
 
       .stat-info h3 {
-        font-size: 18px;
+        font-size: 32px;
       }
 
       .stat-info p {
-        font-size: 11px;
+        font-size: 14px;
+      }
+
+      .activity-section, .quick-actions {
+        margin-bottom: 30px;
+      }
+
+      .activity-list {
+        max-height: 300px;
       }
 
       .activity-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
+        gap: 16px;
+        padding: 12px 0;
       }
 
-      .activity-content {
-        width: 100%;
+      .activity-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+
+      .activity-text {
+        font-size: 14px;
+      }
+
+      .activity-time {
+        font-size: 12px;
+      }
+
+      .action-buttons {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+      }
+
+      .action-buttons button {
+        height: 52px;
+        font-size: 15px;
+        padding: 14px 18px;
+        gap: 10px;
+      }
+    }
+
+    /* Large screens (1024px and up) */
+    @media (min-width: 1024px) {
+      .header-text h1 {
+        font-size: 2.25rem;
+      }
+
+      .header-text p {
+        font-size: 1.25rem;
+      }
+
+      .stat-info h3 {
+        font-size: 36px;
+      }
+
+      .stat-info p {
+        font-size: 15px;
+      }
+
+      .action-buttons button {
+        height: 56px;
+        font-size: 16px;
+        padding: 16px 20px;
       }
     }
   `]

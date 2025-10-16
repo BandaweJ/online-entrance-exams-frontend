@@ -15,6 +15,7 @@ import { AppState } from '../../core/store/app.reducer';
 import { AuthService } from '../../core/services/auth.service';
 import * as AuthActions from '../../core/store/auth/auth.actions';
 import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError } from '../../core/store/auth/auth.selectors';
+import { SchoolLogoComponent } from '../../shared/components/school-logo/school-logo.component';
 
 @Component({
   selector: 'app-login',
@@ -27,17 +28,25 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    SchoolLogoComponent
   ],
   template: `
     <div class="login-container">
-      <mat-card class="login-card" *ngIf="!showRegister">
+      <!-- School Logo and Header -->
+      <div class="brand-header">
+        <app-school-logo size="large"></app-school-logo>
+        <h1 class="brand-title">Entrance Exam System</h1>
+        <p class="brand-subtitle">Excellence in Education</p>
+      </div>
+
+      <mat-card class="login-card glass-card" *ngIf="!showRegister">
         <mat-card-header>
-          <mat-card-title>
-            <mat-icon>school</mat-icon>
-            School Entrance Exam System
+          <mat-card-title class="brand-heading">
+            <mat-icon>login</mat-icon>
+            Sign In
           </mat-card-title>
-          <mat-card-subtitle>Please sign in to continue</mat-card-subtitle>
+          <mat-card-subtitle class="brand-subheading">Access your exam portal</mat-card-subtitle>
         </mat-card-header>
         
         <mat-card-content>
@@ -68,7 +77,7 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
               </mat-error>
             </mat-form-field>
 
-            <button mat-raised-button color="primary" type="submit" class="full-width login-button" [disabled]="loginForm.invalid || (isLoading$ | async)">
+            <button mat-raised-button type="submit" class="full-width btn-brand-primary" [disabled]="loginForm.invalid || (isLoading$ | async)">
               <mat-icon *ngIf="isLoading$ | async">hourglass_empty</mat-icon>
               <mat-icon *ngIf="!(isLoading$ | async)">login</mat-icon>
               {{ (isLoading$ | async) ? 'Signing in...' : 'Sign In' }}
@@ -155,7 +164,7 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
             </div>
 
             <div class="button-group">
-              <button mat-raised-button color="primary" type="submit" [disabled]="registerForm.invalid || (isLoading$ | async)">
+              <button mat-raised-button type="submit" class="btn-brand-primary" [disabled]="registerForm.invalid || (isLoading$ | async)">
                 <mat-icon *ngIf="isLoading$ | async">hourglass_empty</mat-icon>
                 <mat-icon *ngIf="!(isLoading$ | async)">person_add</mat-icon>
                 {{ (isLoading$ | async) ? 'Registering...' : 'Register' }}
@@ -170,35 +179,81 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
     </div>
   `,
   styles: [`
+    /* Mobile-first base styles */
     .login-container {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      padding: 16px;
+      padding: 12px;
       gap: 16px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, var(--anarchy-blue) 0%, var(--anarchy-gold) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="10" cy="60" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+      opacity: 0.3;
+      z-index: 0;
+    }
+
+    .brand-header {
+      text-align: center;
+      z-index: 1;
+      position: relative;
+    }
+
+    .brand-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.75rem; /* Mobile-first: smaller base size */
+      font-weight: 700;
+      color: white;
+      margin: 12px 0 6px 0;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      line-height: 1.2;
+    }
+
+    .brand-subtitle {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem; /* Mobile-first: smaller base size */
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0;
+      font-weight: 300;
+      letter-spacing: 0.5px;
+      line-height: 1.3;
     }
 
     .login-card, .register-card {
       width: 100%;
-      max-width: 400px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-      border-radius: 12px;
-      background: white;
+      max-width: 100%; /* Mobile-first: full width */
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      border-radius: 16px; /* Mobile-first: smaller radius */
+      z-index: 1;
+      position: relative;
     }
 
     .login-form, .register-form {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px; /* Mobile-first: smaller gap */
     }
 
     .form-row {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px; /* Mobile-first: smaller gap */
     }
 
     .full-width {
@@ -210,8 +265,8 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
     }
 
     .login-button {
-      height: 48px;
-      font-size: 16px;
+      height: 44px; /* Mobile-first: smaller height */
+      font-size: 14px; /* Mobile-first: smaller font */
       margin-top: 8px;
       font-weight: 500;
     }
@@ -219,7 +274,8 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
     .register-text {
       text-align: center;
       margin: 0;
-      font-size: 14px;
+      font-size: 13px; /* Mobile-first: smaller font */
+      line-height: 1.4;
     }
 
     .register-text a {
@@ -235,50 +291,53 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
     .button-group {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px; /* Mobile-first: smaller gap */
     }
 
     mat-card-header {
       text-align: center;
-      margin-bottom: 20px;
-      padding: 24px 24px 0 24px;
+      margin-bottom: 16px; /* Mobile-first: smaller margin */
+      padding: 16px 16px 0 16px; /* Mobile-first: smaller padding */
     }
 
     mat-card-title {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      font-size: 1.5rem;
-      font-weight: 500;
-      color: #1976d2;
+      gap: 6px; /* Mobile-first: smaller gap */
+      font-size: 1.25rem; /* Mobile-first: smaller font */
+      font-weight: 600;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      line-height: 1.3;
     }
 
     mat-card-subtitle {
-      font-size: 14px;
-      color: #666;
-      margin-top: 8px;
+      font-size: 12px; /* Mobile-first: smaller font */
+      color: rgba(255, 255, 255, 0.8);
+      margin-top: 6px; /* Mobile-first: smaller margin */
+      line-height: 1.3;
     }
 
     mat-card-content {
-      padding: 0 24px 24px 24px;
+      padding: 0 16px 16px 16px; /* Mobile-first: smaller padding */
     }
 
     mat-card-actions {
-      padding: 0 24px 24px 24px;
+      padding: 0 16px 16px 16px; /* Mobile-first: smaller padding */
     }
 
     .registration-info {
       background-color: #e3f2fd;
       border: 1px solid #bbdefb;
       border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 20px;
+      padding: 12px; /* Mobile-first: smaller padding */
+      margin-bottom: 16px; /* Mobile-first: smaller margin */
     }
 
     .registration-info p {
       margin: 0;
-      font-size: 14px;
+      font-size: 12px; /* Mobile-first: smaller font */
       color: #1976d2;
       line-height: 1.4;
     }
@@ -286,51 +345,90 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
     .error-message {
       display: flex;
       align-items: flex-start;
-      gap: 8px;
+      gap: 6px; /* Mobile-first: smaller gap */
       background-color: #ffebee;
       border: 1px solid #f44336;
       border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 16px;
+      padding: 12px; /* Mobile-first: smaller padding */
+      margin-bottom: 12px; /* Mobile-first: smaller margin */
       color: #c62828;
-      font-size: 14px;
+      font-size: 12px; /* Mobile-first: smaller font */
     }
 
     .error-message mat-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-      margin-top: 2px;
+      font-size: 18px; /* Mobile-first: smaller icon */
+      width: 18px;
+      height: 18px;
+      margin-top: 1px;
     }
 
     .success-message {
       display: flex;
       align-items: flex-start;
-      gap: 8px;
+      gap: 6px; /* Mobile-first: smaller gap */
       background-color: #e8f5e8;
       border: 1px solid #4caf50;
       border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 16px;
+      padding: 12px; /* Mobile-first: smaller padding */
+      margin-bottom: 12px; /* Mobile-first: smaller margin */
       color: #2e7d32;
-      font-size: 14px;
+      font-size: 12px; /* Mobile-first: smaller font */
     }
 
     .success-message mat-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-      margin-top: 2px;
+      font-size: 18px; /* Mobile-first: smaller icon */
+      width: 18px;
+      height: 18px;
+      margin-top: 1px;
     }
 
-    /* Mobile-specific improvements */
-    @media (max-width: 480px) {
+    /* Small mobile devices (320px and up) */
+    @media (min-width: 320px) {
+      .brand-title {
+        font-size: 1.875rem;
+      }
+      
+      .brand-subtitle {
+        font-size: 1rem;
+      }
+      
+      mat-card-title {
+        font-size: 1.375rem;
+      }
+    }
+
+    /* Medium mobile devices (480px and up) */
+    @media (min-width: 480px) {
       .login-container {
-        padding: 12px;
+        padding: 16px;
+        gap: 20px;
+      }
+
+      .brand-title {
+        font-size: 2.25rem;
+        margin: 16px 0 8px 0;
+      }
+
+      .brand-subtitle {
+        font-size: 1.125rem;
+      }
+
+      .login-card, .register-card {
+        max-width: 400px;
+        border-radius: 20px;
+      }
+
+      .login-form, .register-form {
+        gap: 16px;
+      }
+
+      .form-row {
+        gap: 16px;
       }
 
       mat-card-header {
         padding: 20px 20px 0 20px;
+        margin-bottom: 20px;
       }
 
       mat-card-content {
@@ -342,14 +440,62 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
       }
 
       mat-card-title {
-        font-size: 1.25rem;
+        font-size: 1.5rem;
+        gap: 8px;
+      }
+
+      mat-card-subtitle {
+        font-size: 14px;
+        margin-top: 8px;
+      }
+
+      .registration-info {
+        padding: 16px;
+        margin-bottom: 20px;
+      }
+
+      .registration-info p {
+        font-size: 14px;
+      }
+
+      .error-message, .success-message {
+        padding: 16px;
+        margin-bottom: 16px;
+        font-size: 14px;
+        gap: 8px;
+      }
+
+      .error-message mat-icon, .success-message mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        margin-top: 2px;
+      }
+
+      .register-text {
+        font-size: 14px;
+      }
+
+      .login-button {
+        height: 48px;
+        font-size: 16px;
       }
     }
 
-    /* Tablet and up */
+    /* Tablet and up (768px and up) */
     @media (min-width: 768px) {
       .login-container {
         padding: 24px;
+        gap: 24px;
+      }
+
+      .brand-title {
+        font-size: 2.5rem;
+        margin: 20px 0 10px 0;
+      }
+
+      .brand-subtitle {
+        font-size: 1.25rem;
       }
 
       .form-row {
@@ -359,10 +505,26 @@ import { selectIsLoading, selectIsAuthenticated, selectCurrentUser, selectError 
       .button-group {
         flex-direction: row;
         justify-content: center;
+        gap: 12px;
       }
 
       mat-card-title {
         font-size: 1.75rem;
+      }
+    }
+
+    /* Large screens (1024px and up) */
+    @media (min-width: 1024px) {
+      .brand-title {
+        font-size: 3rem;
+      }
+
+      .brand-subtitle {
+        font-size: 1.375rem;
+      }
+
+      mat-card-title {
+        font-size: 2rem;
       }
     }
   `]

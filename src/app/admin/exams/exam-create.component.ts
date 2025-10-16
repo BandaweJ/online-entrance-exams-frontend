@@ -124,33 +124,48 @@ import { CreateExamRequest } from '../../models/exam.model';
     </div>
   `,
   styles: [`
+    /* Mobile-first base styles with branding */
     .exam-create-container {
-      padding: 20px;
+      padding: 12px; /* Mobile-first: smaller padding */
       max-width: 800px;
       margin: 0 auto;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--anarchy-off-white) 0%, #E5E7EB 100%);
     }
 
     .exam-create-header {
       display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 30px;
+      flex-direction: column; /* Mobile-first: stacked layout */
+      gap: 12px; /* Mobile-first: smaller gap */
+      margin-bottom: 20px; /* Mobile-first: smaller margin */
+      padding: 16px; /* Mobile-first: smaller padding */
+      background: var(--glass-card);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: var(--glass-shadow);
+      border-radius: 16px; /* Branded radius */
     }
 
     .exam-create-header h1 {
       margin: 0;
-      color: #1976d2;
+      color: var(--anarchy-blue); /* Brand color */
+      font-family: 'Playfair Display', serif;
+      font-size: 18px; /* Mobile-first: smaller font */
+      font-weight: 600;
+      text-align: center; /* Mobile-first: center alignment */
     }
 
     .exam-form {
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 16px; /* Mobile-first: smaller gap */
     }
 
     .form-row {
       display: flex;
-      gap: 16px;
+      flex-direction: column; /* Mobile-first: stacked layout */
+      gap: 12px; /* Mobile-first: smaller gap */
     }
 
     .full-width {
@@ -163,24 +178,153 @@ import { CreateExamRequest } from '../../models/exam.model';
 
     .form-actions {
       display: flex;
-      justify-content: flex-end;
-      gap: 16px;
-      margin-top: 32px;
-      padding-top: 24px;
-      border-top: 1px solid #eee;
+      flex-direction: column; /* Mobile-first: stacked layout */
+      gap: 12px; /* Mobile-first: smaller gap */
+      margin-top: 24px; /* Mobile-first: smaller margin */
+      padding-top: 20px; /* Mobile-first: smaller padding */
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .form-actions button {
       min-width: 120px;
+      height: 44px; /* Mobile-first: smaller height */
+      font-size: 14px; /* Mobile-first: smaller font */
+      border-radius: 12px; /* Branded radius */
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
     }
 
     mat-form-field {
       width: 100%;
     }
 
+    mat-form-field .mat-form-field-outline {
+      color: rgba(30, 58, 138, 0.3); /* Brand color */
+    }
+
+    mat-form-field.mat-focused .mat-form-field-outline {
+      color: var(--anarchy-blue); /* Brand color */
+    }
+
+    mat-form-field .mat-form-field-label {
+      color: var(--anarchy-grey); /* Brand color */
+      font-family: 'Inter', sans-serif;
+    }
+
+    mat-form-field.mat-focused .mat-form-field-label {
+      color: var(--anarchy-blue); /* Brand color */
+    }
+
     textarea {
       resize: vertical;
-      min-height: 80px;
+      min-height: 60px; /* Mobile-first: smaller height */
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Small mobile devices (320px and up) */
+    @media (min-width: 320px) {
+      .exam-create-header h1 {
+        font-size: 19px;
+      }
+    }
+
+    /* Medium mobile devices (480px and up) */
+    @media (min-width: 480px) {
+      .exam-create-container {
+        padding: 16px;
+      }
+
+      .exam-create-header {
+        flex-direction: row;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding: 20px;
+        border-radius: 20px;
+      }
+
+      .exam-create-header h1 {
+        font-size: 20px;
+        text-align: left;
+      }
+
+      .exam-form {
+        gap: 20px;
+      }
+
+      .form-row {
+        flex-direction: row;
+        gap: 16px;
+      }
+
+      .form-actions {
+        flex-direction: row;
+        justify-content: flex-end;
+        gap: 16px;
+        margin-top: 32px;
+        padding-top: 24px;
+      }
+
+      .form-actions button {
+        height: 48px;
+        font-size: 15px;
+        min-width: 140px;
+      }
+
+      textarea {
+        min-height: 80px;
+      }
+    }
+
+    /* Tablet and up (768px and up) */
+    @media (min-width: 768px) {
+      .exam-create-container {
+        padding: 24px;
+      }
+
+      .exam-create-header {
+        padding: 24px;
+        margin-bottom: 32px;
+      }
+
+      .exam-create-header h1 {
+        font-size: 24px;
+      }
+
+      .exam-form {
+        gap: 24px;
+      }
+
+      .form-row {
+        gap: 20px;
+      }
+
+      .form-actions {
+        gap: 20px;
+        margin-top: 40px;
+        padding-top: 32px;
+      }
+
+      .form-actions button {
+        height: 52px;
+        font-size: 16px;
+        min-width: 160px;
+      }
+
+      textarea {
+        min-height: 100px;
+      }
+    }
+
+    /* Large screens (1024px and up) */
+    @media (min-width: 1024px) {
+      .exam-create-header h1 {
+        font-size: 28px;
+      }
+
+      .form-actions button {
+        font-size: 17px;
+      }
     }
   `]
 })

@@ -41,6 +41,15 @@ import { Exam } from '../../models/exam.model';
 
       <mat-card *ngIf="!isLoading; else loading">
         <mat-card-content>
+          <!-- Published Exam Warning -->
+          <div *ngIf="exam?.status === 'published'" class="published-warning">
+            <mat-icon>info</mat-icon>
+            <div>
+              <strong>Published Exam</strong>
+              <p>This exam has been published. Only exam date, duration, and description can be modified.</p>
+            </div>
+          </div>
+
           <form [formGroup]="examForm" (ngSubmit)="onSubmit()" class="exam-form">
             <div class="form-row">
               <mat-form-field appearance="outline" class="full-width">
@@ -188,6 +197,34 @@ import { Exam } from '../../models/exam.model';
       margin-top: 16px;
       color: #666;
     }
+
+    .published-warning {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background-color: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .published-warning mat-icon {
+      color: #856404;
+      margin-top: 2px;
+    }
+
+    .published-warning strong {
+      color: #856404;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .published-warning p {
+      margin: 0;
+      color: #856404;
+      font-size: 14px;
+    }
   `]
 })
 export class ExamEditComponent implements OnInit {
@@ -231,6 +268,13 @@ export class ExamEditComponent implements OnInit {
           examDate: new Date(exam.examDate),
           durationMinutes: exam.durationMinutes
         });
+        
+        // Disable fields for published exams
+        if (exam.status === 'published') {
+          this.examForm.get('title')?.disable();
+          this.examForm.get('year')?.disable();
+        }
+        
         this.isLoading = false;
       },
       error: (error) => {
@@ -244,9 +288,10 @@ export class ExamEditComponent implements OnInit {
   onSubmit() {
     if (this.examForm.valid && this.exam) {
       this.isSubmitting = true;
+      const formValue = this.examForm.getRawValue(); // Use getRawValue() to include disabled controls
       const examData = {
-        ...this.examForm.value,
-        examDate: this.examForm.value.examDate.toISOString()
+        ...formValue,
+        examDate: formValue.examDate.toISOString()
       };
 
       this.examService.updateExam(this.exam.id, examData).subscribe({
@@ -256,7 +301,17 @@ export class ExamEditComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error updating exam:', error);
-          this.snackBar.open('Error updating exam', 'Close', { duration: 3000 });
+          let errorMessage = 'Error updating exam';
+          
+          if (error.status === 400) {
+            errorMessage = error.error?.message || 'Cannot update this exam. It may be published and only certain fields can be modified.';
+          } else if (error.status === 401) {
+            errorMessage = 'You are not authorized to update this exam.';
+          } else if (error.status === 404) {
+            errorMessage = 'Exam not found.';
+          }
+          
+          this.snackBar.open(errorMessage, 'Close', { duration: 5000 });
           this.isSubmitting = false;
         }
       });

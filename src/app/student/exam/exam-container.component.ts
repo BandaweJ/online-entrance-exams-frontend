@@ -19,6 +19,7 @@ import { Exam, Question, Section } from '../../models/exam.model';
 import { ExamAttempt, CreateAttemptRequest } from '../../models/attempt.model';
 import { Answer } from '../../models/answer.model';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
+import { SchoolLogoComponent } from '../../shared/components/school-logo/school-logo.component';
 import { interval, Subscription, fromEvent, merge } from 'rxjs';
 import { map, filter, debounceTime } from 'rxjs/operators';
 
@@ -37,7 +38,8 @@ import { map, filter, debounceTime } from 'rxjs/operators';
     MatChipsModule,
     CountdownDisplayComponent,
     ExamNavigationComponent,
-    QuestionViewComponent
+    QuestionViewComponent,
+    SchoolLogoComponent
   ],
   template: `
     <div class="exam-container" *ngIf="exam && attempt; else loading">
@@ -61,8 +63,13 @@ import { map, filter, debounceTime } from 'rxjs/operators';
       <!-- Exam Header -->
       <div class="exam-header">
         <div class="exam-info">
-          <h1>{{ exam.title }}</h1>
-          <p>{{ exam.description }}</p>
+          <div class="brand-section">
+            <app-school-logo size="small"></app-school-logo>
+            <div class="exam-details">
+              <h1>{{ exam.title }}</h1>
+              <p>{{ exam.description }}</p>
+            </div>
+          </div>
         </div>
         <div class="exam-controls">
           <div class="timer-section">
@@ -195,10 +202,14 @@ import { map, filter, debounceTime } from 'rxjs/operators';
     </ng-template>
   `,
   styles: [`
+    /* Mobile-first base styles with branding */
     .exam-container {
       min-height: 100vh;
-      background-color: #f5f5f5;
+      background: linear-gradient(135deg, var(--anarchy-off-white) 0%, #E5E7EB 100%);
       position: relative;
+      padding: 12px; /* Mobile-first: smaller padding */
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
     .paused-overlay {
@@ -215,105 +226,145 @@ import { map, filter, debounceTime } from 'rxjs/operators';
     }
 
     .paused-content {
-      background: white;
-      padding: 40px;
-      border-radius: 12px;
+      background: var(--glass-card); /* Branded glass effect */
+      padding: 24px; /* Mobile-first: smaller padding */
+      border-radius: 16px; /* Mobile-first: smaller radius */
       text-align: center;
-      max-width: 500px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      max-width: 90vw; /* Mobile-first: responsive width */
+      box-shadow: var(--glass-shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .paused-icon {
-      font-size: 64px;
-      width: 64px;
-      height: 64px;
-      color: #ff9800;
-      margin-bottom: 20px;
+      font-size: 48px; /* Mobile-first: smaller icon */
+      width: 48px;
+      height: 48px;
+      color: var(--anarchy-gold); /* Brand color */
+      margin-bottom: 16px; /* Mobile-first: smaller margin */
     }
 
     .paused-content h2 {
-      margin: 0 0 16px 0;
-      color: #333;
-      font-size: 28px;
+      margin: 0 0 12px 0; /* Mobile-first: smaller margin */
+      color: var(--anarchy-blue); /* Brand color */
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem; /* Mobile-first: smaller font */
+      font-weight: 600;
+      line-height: 1.3;
     }
 
     .paused-content p {
-      margin: 0 0 16px 0;
-      color: #666;
-      font-size: 16px;
-      line-height: 1.5;
+      margin: 0 0 12px 0; /* Mobile-first: smaller margin */
+      color: var(--anarchy-grey); /* Brand color */
+      font-family: 'Inter', sans-serif;
+      font-size: 14px; /* Mobile-first: smaller font */
+      line-height: 1.4;
     }
 
     .paused-warning {
-      background-color: #fff3e0;
-      border: 1px solid #ff9800;
+      background-color: rgba(255, 152, 0, 0.1); /* Branded warning */
+      border: 1px solid var(--anarchy-gold);
       border-radius: 8px;
-      padding: 16px;
-      margin: 20px 0;
+      padding: 12px; /* Mobile-first: smaller padding */
+      margin: 16px 0; /* Mobile-first: smaller margin */
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px; /* Mobile-first: smaller gap */
     }
 
     .paused-warning mat-icon {
-      color: #ff9800;
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
+      color: var(--anarchy-gold); /* Brand color */
+      font-size: 18px; /* Mobile-first: smaller icon */
+      width: 18px;
+      height: 18px;
     }
 
     .exam-header {
-      background: white;
-      padding: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background: var(--glass-card);
+      padding: 16px; /* Mobile-first: smaller padding */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: var(--glass-shadow);
+      border-radius: 16px; /* Mobile-first: smaller radius */
+      margin-bottom: 16px; /* Mobile-first: smaller margin */
       display: flex;
-      justify-content: space-between;
+      flex-direction: column; /* Mobile-first: stacked layout */
+      gap: 12px; /* Mobile-first: smaller gap */
+    }
+
+    .brand-section {
+      display: flex;
+      flex-direction: column; /* Mobile-first: stacked layout */
       align-items: center;
+      gap: 12px; /* Mobile-first: smaller gap */
+      text-align: center;
     }
 
-    .exam-info h1 {
-      margin: 0 0 8px 0;
-      color: #1976d2;
+    .exam-details h1 {
+      margin: 0 0 6px 0; /* Mobile-first: smaller margin */
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem; /* Mobile-first: smaller font */
+      font-weight: 600;
+      color: var(--anarchy-blue);
+      line-height: 1.2;
     }
 
-    .exam-info p {
+    .exam-details p {
       margin: 0;
-      color: #666;
+      font-family: 'Inter', sans-serif;
+      color: var(--anarchy-grey);
+      font-size: 0.875rem; /* Mobile-first: smaller font */
+      line-height: 1.3;
     }
 
     .exam-controls {
       display: flex;
+      flex-direction: column; /* Mobile-first: stacked layout */
       align-items: center;
-      gap: 20px;
+      gap: 12px; /* Mobile-first: smaller gap */
     }
 
     .timer-section {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px; /* Mobile-first: smaller gap */
     }
 
     .action-buttons {
       display: flex;
-      gap: 12px;
+      flex-direction: column; /* Mobile-first: stacked layout */
+      gap: 8px; /* Mobile-first: smaller gap */
+      width: 100%;
+    }
+
+    .action-buttons button {
+      height: 44px; /* Mobile-first: smaller height */
+      font-size: 13px; /* Mobile-first: smaller font */
+      border-radius: 12px; /* Branded radius */
     }
 
     .progress-section {
-      background: white;
-      padding: 16px 20px;
-      border-bottom: 1px solid #e0e0e0;
+      background: var(--glass-card);
+      padding: 12px 16px; /* Mobile-first: smaller padding */
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
     .progress-info {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 8px;
-      font-size: 14px;
-      color: #666;
+      margin-bottom: 6px; /* Mobile-first: smaller margin */
+      font-size: 12px; /* Mobile-first: smaller font */
+      color: var(--anarchy-grey);
+      font-family: 'Inter', sans-serif;
     }
 
     .exam-content {
       display: flex;
+      flex-direction: column; /* Mobile-first: stacked layout */
       min-height: calc(100vh - 200px);
     }
 
@@ -323,48 +374,66 @@ import { map, filter, debounceTime } from 'rxjs/operators';
     }
 
     .navigation-sidebar {
-      width: 300px;
-      background: white;
-      border-right: 1px solid #e0e0e0;
-      padding: 20px;
+      width: 100%; /* Mobile-first: full width */
+      background: var(--glass-card);
+      border-right: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 16px; /* Mobile-first: smaller padding */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      order: 2; /* Show navigation after question on mobile */
     }
 
     .question-area {
       flex: 1;
-      padding: 20px;
-      background: white;
-      margin: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 16px; /* Mobile-first: smaller padding */
+      background: var(--glass-card);
+      margin: 0; /* Mobile-first: no margin */
+      border-radius: 16px; /* Branded radius */
+      box-shadow: var(--glass-shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      order: 1; /* Show question first on mobile */
     }
 
     .section-header {
-      background: #f8f9fa;
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      border-left: 4px solid #1976d2;
+      background: rgba(30, 58, 138, 0.1); /* Brand color background */
+      padding: 12px; /* Mobile-first: smaller padding */
+      border-radius: 12px; /* Branded radius */
+      margin-bottom: 16px; /* Mobile-first: smaller margin */
+      border-left: 4px solid var(--anarchy-blue);
     }
 
     .section-chip {
-      background-color: #e3f2fd;
-      color: #1976d2;
-      margin-bottom: 8px;
+      background-color: rgba(30, 58, 138, 0.1); /* Brand color background */
+      color: var(--anarchy-blue);
+      margin-bottom: 6px; /* Mobile-first: smaller margin */
+      font-size: 12px; /* Mobile-first: smaller font */
     }
 
     .section-description {
       display: block;
-      color: #666;
-      font-size: 14px;
-      margin-top: 8px;
+      color: var(--anarchy-grey);
+      font-size: 12px; /* Mobile-first: smaller font */
+      margin-top: 6px; /* Mobile-first: smaller margin */
+      line-height: 1.3;
     }
 
     .question-navigation {
       display: flex;
-      justify-content: space-between;
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid #e0e0e0;
+      flex-direction: column; /* Mobile-first: stacked layout */
+      gap: 10px; /* Mobile-first: smaller gap */
+      margin-top: 20px; /* Mobile-first: smaller margin */
+      padding-top: 16px; /* Mobile-first: smaller padding */
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .question-navigation button {
+      width: 100%; /* Mobile-first: full width */
+      height: 44px; /* Mobile-first: smaller height */
+      font-size: 14px; /* Mobile-first: smaller font */
+      border-radius: 12px; /* Branded radius */
     }
 
     .loading-container {
@@ -376,180 +445,249 @@ import { map, filter, debounceTime } from 'rxjs/operators';
     }
 
     .loading-container p {
-      margin-top: 16px;
-      color: #666;
+      margin-top: 12px; /* Mobile-first: smaller margin */
+      color: var(--anarchy-grey);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px; /* Mobile-first: smaller font */
     }
 
-    /* Mobile-First Responsive Design */
-    @media (max-width: 768px) {
+    /* Small mobile devices (320px and up) */
+    @media (min-width: 320px) {
+      .exam-details h1 {
+        font-size: 1.375rem;
+      }
+      
+      .paused-content h2 {
+        font-size: 1.625rem;
+      }
+      
+      .paused-content p {
+        font-size: 15px;
+      }
+    }
+
+    /* Medium mobile devices (480px and up) */
+    @media (min-width: 480px) {
       .exam-container {
-        padding: 0;
+        padding: 16px;
       }
 
       .exam-header {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 20px;
+      }
+
+      .brand-section {
+        flex-direction: row;
+        text-align: left;
         gap: 16px;
       }
 
-      .exam-info h1 {
-        font-size: 1.25rem;
-        margin-bottom: 4px;
+      .exam-details h1 {
+        font-size: 1.5rem;
+        margin: 0 0 8px 0;
       }
 
-      .exam-info p {
-        font-size: 0.875rem;
+      .exam-details p {
+        font-size: 0.9rem;
       }
 
       .exam-controls {
-        flex-direction: column;
-        gap: 12px;
-      }
-
-      .timer-section {
-        justify-content: center;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
       }
 
       .action-buttons {
-        justify-content: center;
-        flex-wrap: wrap;
+        flex-direction: row;
+        gap: 12px;
+        width: auto;
       }
 
       .action-buttons button {
-        flex: 1;
+        height: 48px;
+        font-size: 14px;
         min-width: 120px;
       }
 
       .progress-section {
-        padding: 12px 16px;
+        padding: 16px 20px;
       }
 
       .progress-info {
-        font-size: 12px;
-      }
-
-      .exam-content {
-        flex-direction: column;
-        min-height: auto;
-      }
-
-      .navigation-sidebar {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid #e0e0e0;
-        padding: 16px;
-        order: 2; /* Show navigation after question on mobile */
+        font-size: 14px;
+        margin-bottom: 8px;
       }
 
       .question-area {
-        flex: 1;
-        padding: 16px;
-        margin: 0;
-        border-radius: 0;
-        order: 1; /* Show question first on mobile */
+        padding: 20px;
+        margin: 20px;
+        border-radius: 20px;
+      }
+
+      .navigation-sidebar {
+        padding: 20px;
+        border-radius: 20px;
       }
 
       .section-header {
-        padding: 12px;
-        margin-bottom: 16px;
+        padding: 16px;
+        margin-bottom: 20px;
+        border-radius: 16px;
       }
 
       .section-chip {
-        font-size: 0.75rem;
+        font-size: 14px;
+        margin-bottom: 8px;
       }
 
       .section-description {
-        font-size: 0.75rem;
-      }
-
-      .question-navigation {
-        flex-direction: column;
-        gap: 12px;
-        margin-top: 20px;
-        padding-top: 16px;
-      }
-
-      .question-navigation button {
-        width: 100%;
-        height: 48px;
-        font-size: 16px;
-      }
-
-      .paused-content {
-        margin: 16px;
-        padding: 24px 16px;
-        max-width: calc(100vw - 32px);
-      }
-
-      .paused-content h2 {
-        font-size: 1.5rem;
-      }
-
-      .paused-content p {
         font-size: 14px;
-      }
-
-      .paused-icon {
-        font-size: 48px;
-        width: 48px;
-        height: 48px;
-      }
-    }
-
-    /* Small mobile devices */
-    @media (max-width: 480px) {
-      .exam-header {
-        padding: 12px;
-      }
-
-      .exam-info h1 {
-        font-size: 1.125rem;
-      }
-
-      .action-buttons button {
-        min-width: 100px;
-        font-size: 14px;
-      }
-
-      .question-area {
-        padding: 12px;
-      }
-
-      .navigation-sidebar {
-        padding: 12px;
-      }
-
-      .paused-content {
-        margin: 12px;
-        padding: 20px 12px;
-      }
-    }
-
-    /* Tablet and up */
-    @media (min-width: 769px) {
-      .exam-content {
-        flex-direction: row;
-      }
-
-      .navigation-sidebar {
-        width: 300px;
-        order: 1;
-      }
-
-      .question-area {
-        order: 2;
-        margin: 20px;
+        margin-top: 8px;
       }
 
       .question-navigation {
         flex-direction: row;
         justify-content: space-between;
+        gap: 12px;
+        margin-top: 30px;
+        padding-top: 20px;
       }
 
       .question-navigation button {
         width: auto;
         min-width: 120px;
+        height: 48px;
+        font-size: 16px;
+      }
+
+      .paused-content {
+        padding: 32px;
+        max-width: 500px;
+        border-radius: 20px;
+      }
+
+      .paused-content h2 {
+        font-size: 1.75rem;
+        margin: 0 0 16px 0;
+      }
+
+      .paused-content p {
+        font-size: 16px;
+        margin: 0 0 16px 0;
+      }
+
+      .paused-icon {
+        font-size: 56px;
+        width: 56px;
+        height: 56px;
+        margin-bottom: 20px;
+      }
+
+      .paused-warning {
+        padding: 16px;
+        margin: 20px 0;
+        gap: 8px;
+      }
+
+      .paused-warning mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    /* Tablet and up (768px and up) */
+    @media (min-width: 768px) {
+      .exam-container {
+        padding: 20px;
+      }
+
+      .exam-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px;
+        margin-bottom: 30px;
+      }
+
+      .brand-section {
+        gap: 20px;
+      }
+
+      .exam-details h1 {
+        font-size: 1.75rem;
+        margin: 0 0 8px 0;
+      }
+
+      .exam-details p {
+        font-size: 1rem;
+      }
+
+      .exam-controls {
+        flex-direction: row;
+        gap: 20px;
+      }
+
+      .action-buttons {
+        gap: 12px;
+      }
+
+      .exam-content {
+        flex-direction: row;
+        min-height: calc(100vh - 200px);
+      }
+
+      .navigation-sidebar {
+        width: 300px;
+        order: 1;
+        border-right: 1px solid rgba(255, 255, 255, 0.2);
+        border-bottom: none;
+        padding: 24px;
+      }
+
+      .question-area {
+        order: 2;
+        margin: 20px;
+        padding: 24px;
+      }
+
+      .question-navigation {
+        flex-direction: row;
+        justify-content: space-between;
+        margin-top: 30px;
+        padding-top: 20px;
+      }
+
+      .question-navigation button {
+        width: auto;
+        min-width: 120px;
+      }
+    }
+
+    /* Large screens (1024px and up) */
+    @media (min-width: 1024px) {
+      .exam-details h1 {
+        font-size: 2rem;
+      }
+
+      .exam-details p {
+        font-size: 1.125rem;
+      }
+
+      .paused-content h2 {
+        font-size: 2rem;
+      }
+
+      .paused-content p {
+        font-size: 18px;
+      }
+
+      .paused-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
       }
     }
 
@@ -561,6 +699,10 @@ import { map, filter, debounceTime } from 'rxjs/operators';
       z-index: 1000;
       width: 56px;
       height: 56px;
+      background: var(--brand-gradient);
+      color: white;
+      border-radius: 50%;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
     }
 
     .mobile-nav-overlay {
@@ -578,13 +720,16 @@ import { map, filter, debounceTime } from 'rxjs/operators';
     }
 
     .mobile-nav-content {
-      background: white;
-      border-radius: 12px;
+      background: var(--glass-card);
+      border-radius: 20px; /* Branded radius */
       width: 100%;
       max-width: 400px;
       max-height: 80vh;
       overflow: hidden;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      box-shadow: var(--glass-shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .mobile-nav-header {
@@ -592,20 +737,22 @@ import { map, filter, debounceTime } from 'rxjs/operators';
       align-items: center;
       justify-content: space-between;
       padding: 16px 20px;
-      border-bottom: 1px solid #e0e0e0;
-      background-color: #f5f5f5;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(30, 58, 138, 0.1); /* Brand color background */
     }
 
     .mobile-nav-header h3 {
       margin: 0;
       font-size: 1.125rem;
       font-weight: 500;
-      color: #333;
+      color: var(--anarchy-blue);
+      font-family: 'Playfair Display', serif;
     }
 
     .mobile-nav-header button {
       min-width: 44px;
       min-height: 44px;
+      border-radius: 12px; /* Branded radius */
     }
   `]
 })

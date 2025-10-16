@@ -17,6 +17,7 @@ import { ExamService } from '../../core/services/exam.service';
 import { Observable, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
+import { SchoolLogoComponent } from '../../shared/components/school-logo/school-logo.component';
 import { selectExamsWithCalculatedStats, selectExamLoading } from '../../core/store/exam/exam.selectors';
 import * as ExamActions from '../../core/store/exam/exam.actions';
 
@@ -34,13 +35,20 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
     MatMenuModule,
     MatDialogModule,
     MatSnackBarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    SchoolLogoComponent
   ],
   template: `
     <div class="exams-container">
       <div class="exams-header">
-        <h1>Exam Management</h1>
-        <button mat-raised-button color="primary" routerLink="/admin/exams/create" class="create-button">
+        <div class="brand-section">
+          <app-school-logo size="medium"></app-school-logo>
+          <div class="header-text">
+            <h1 class="brand-heading">Exam Management</h1>
+            <p class="brand-subheading">Manage and monitor all exams</p>
+          </div>
+        </div>
+        <button mat-raised-button routerLink="/admin/exams/create" class="btn-brand-primary create-button">
           <mat-icon>add</mat-icon>
           <span class="tablet-up">Create New Exam</span>
           <span class="mobile-only">New Exam</span>
@@ -240,6 +248,8 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
       padding: 20px;
       max-width: 1200px;
       margin: 0 auto;
+      background: linear-gradient(135deg, var(--anarchy-off-white) 0%, #E5E7EB 100%);
+      min-height: 100vh;
     }
 
     .exams-header {
@@ -247,6 +257,34 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
       justify-content: space-between;
       align-items: center;
       margin-bottom: 30px;
+      padding: 20px;
+      background: var(--glass-card);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: var(--glass-shadow);
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .header-text h1 {
+      margin: 0 0 8px 0;
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--anarchy-blue);
+    }
+
+    .header-text p {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      color: var(--anarchy-grey);
+      font-size: 1rem;
     }
 
     .exams-header h1 {
@@ -346,6 +384,18 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
 
     .exam-card {
       margin: 0;
+      background: var(--glass-card);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: var(--glass-shadow);
+      transition: all 0.3s ease;
+    }
+
+    .exam-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
     }
 
     .exam-card-header {
@@ -358,15 +408,17 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
     .exam-card-header .exam-info h3 {
       margin: 0 0 4px 0;
       font-size: 1.125rem;
-      font-weight: 500;
-      color: #1976d2;
+      font-weight: 600;
+      color: var(--anarchy-blue);
+      font-family: 'Playfair Display', serif;
     }
 
     .exam-card-header .exam-info .exam-description {
       margin: 0;
-      color: #666;
+      color: var(--anarchy-grey);
       font-size: 0.875rem;
       line-height: 1.4;
+      font-family: 'Inter', sans-serif;
     }
 
     .exam-details {

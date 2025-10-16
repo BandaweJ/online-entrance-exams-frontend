@@ -143,25 +143,34 @@ import { ChangePasswordDialogComponent } from './shared/components/change-passwo
     </div>
   `,
   styles: [`
+    /* Mobile-first base styles with branding */
     .app-container {
       height: 100vh;
       display: flex;
       flex-direction: column;
+      background: linear-gradient(135deg, var(--anarchy-off-white) 0%, #E5E7EB 100%);
     }
 
-    /* Mobile-First Toolbar */
+    /* Mobile-First Toolbar with Branding */
     .app-toolbar {
       position: sticky;
       top: 0;
       z-index: 1000;
       height: 56px; /* Mobile toolbar height */
-      padding: 0 8px;
+      padding: 0 8px; /* Mobile-first: smaller padding */
+      background: var(--glass-card);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: var(--glass-shadow);
     }
 
     .app-title {
-      font-size: 1rem;
-      font-weight: 500;
-      margin-left: 8px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; /* Mobile-first: smaller font */
+      font-weight: 600;
+      margin-left: 8px; /* Mobile-first: smaller margin */
+      color: var(--anarchy-blue); /* Brand color */
     }
 
     .user-info {
@@ -170,90 +179,188 @@ import { ChangePasswordDialogComponent } from './shared/components/change-passwo
     }
 
     .user-name {
-      font-size: 0.875rem;
-      font-weight: 400;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem; /* Mobile-first: smaller font */
+      font-weight: 500;
+      color: var(--anarchy-grey); /* Brand color */
     }
 
     .menu-button, .user-menu-button {
-      min-width: 44px;
+      min-width: 44px; /* Touch-friendly */
       min-height: 44px;
+      border-radius: 12px; /* Branded radius */
+      color: var(--anarchy-blue); /* Brand color */
+    }
+
+    .menu-button:hover, .user-menu-button:hover {
+      background: rgba(30, 58, 138, 0.1); /* Brand color background */
     }
 
     .spacer {
       flex: 1 1 auto;
     }
 
-    /* Mobile-First Navigation */
+    /* Mobile-First Navigation with Branding */
     .sidenav-container {
       flex: 1;
     }
 
     .navigation-sidenav {
       width: 280px; /* Wider for mobile touch */
+      background: var(--glass-card);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: var(--glass-shadow);
     }
 
     .nav-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px;
-      border-bottom: 1px solid rgba(0,0,0,0.12);
-      background-color: #f5f5f5;
+      padding: 16px; /* Mobile-first: smaller padding */
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(30, 58, 138, 0.1); /* Brand color background */
     }
 
     .nav-title {
       margin: 0;
-      font-size: 1.125rem;
-      font-weight: 500;
-      color: #333;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.125rem; /* Mobile-first: smaller font */
+      font-weight: 600;
+      color: var(--anarchy-blue); /* Brand color */
     }
 
     .close-nav {
-      min-width: 44px;
+      min-width: 44px; /* Touch-friendly */
       min-height: 44px;
+      border-radius: 12px; /* Branded radius */
+      color: var(--anarchy-grey); /* Brand color */
+    }
+
+    .close-nav:hover {
+      background: rgba(30, 58, 138, 0.1); /* Brand color background */
     }
 
     .nav-list {
-      padding: 8px 0;
+      padding: 8px 0; /* Mobile-first: smaller padding */
     }
 
     .nav-list a {
       text-decoration: none;
-      color: inherit;
+      color: var(--anarchy-grey); /* Brand color */
       min-height: 48px; /* Touch-friendly */
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      border-radius: 8px; /* Branded radius */
+      margin: 4px 8px; /* Mobile-first: smaller margin */
+      transition: all 0.3s ease;
+    }
+
+    .nav-list a:hover {
+      background: rgba(30, 58, 138, 0.1); /* Brand color background */
+      color: var(--anarchy-blue); /* Brand color */
+      transform: translateX(4px);
     }
 
     .nav-list a.active {
-      background-color: rgba(25, 118, 210, 0.12);
-      color: #1976d2;
+      background: var(--brand-gradient);
+      color: white;
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
     }
 
     .nav-list mat-icon {
-      margin-right: 16px;
+      margin-right: 16px; /* Mobile-first: smaller margin */
+      color: var(--anarchy-blue); /* Brand color */
     }
 
-    /* Main Content */
+    .nav-list a.active mat-icon {
+      color: white;
+    }
+
+    /* Main Content with Branding */
     .main-sidenav-content {
-      background-color: #f5f5f5;
+      background: linear-gradient(135deg, var(--anarchy-off-white) 0%, #E5E7EB 100%);
     }
 
     .main-content {
-      padding: 16px;
+      padding: 12px; /* Mobile-first: smaller padding */
       min-height: calc(100vh - 56px);
-      background-color: #f5f5f5;
+      background: transparent;
     }
 
-    /* Auth Container */
+    /* Auth Container with Branding */
     .auth-container {
       height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 16px;
+      background: linear-gradient(135deg, var(--anarchy-off-white) 0%, #E5E7EB 100%);
+      padding: 12px; /* Mobile-first: smaller padding */
     }
 
-    /* Tablet and up */
+    /* User Menu with Branding */
+    .user-menu {
+      background: var(--glass-card);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: var(--glass-shadow);
+      border-radius: 16px; /* Branded radius */
+    }
+
+    .user-menu .mat-menu-item {
+      font-family: 'Inter', sans-serif;
+      color: var(--anarchy-grey); /* Brand color */
+      border-radius: 8px; /* Branded radius */
+      margin: 4px 8px; /* Mobile-first: smaller margin */
+    }
+
+    .user-menu .mat-menu-item:hover {
+      background: rgba(30, 58, 138, 0.1); /* Brand color background */
+      color: var(--anarchy-blue); /* Brand color */
+    }
+
+    .user-menu .mat-menu-item mat-icon {
+      color: var(--anarchy-blue); /* Brand color */
+    }
+
+    /* Small mobile devices (320px and up) */
+    @media (min-width: 320px) {
+      .app-title {
+        font-size: 1.125rem;
+      }
+      
+      .user-name {
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Medium mobile devices (480px and up) */
+    @media (min-width: 480px) {
+      .app-toolbar {
+        padding: 0 12px;
+      }
+
+      .app-title {
+        font-size: 1.25rem;
+        margin-left: 12px;
+      }
+
+      .user-name {
+        font-size: 1rem;
+      }
+
+      .main-content {
+        padding: 16px;
+      }
+
+      .auth-container {
+        padding: 16px;
+      }
+    }
+
+    /* Tablet and up (768px and up) */
     @media (min-width: 768px) {
       .app-toolbar {
         height: 64px;
@@ -261,16 +368,32 @@ import { ChangePasswordDialogComponent } from './shared/components/change-passwo
       }
 
       .app-title {
-        font-size: 1.25rem;
+        font-size: 1.375rem;
         margin-left: 16px;
       }
 
       .user-name {
-        font-size: 1rem;
+        font-size: 1.125rem;
       }
 
       .navigation-sidenav {
         width: 250px;
+      }
+
+      .nav-header {
+        padding: 20px;
+      }
+
+      .nav-title {
+        font-size: 1.25rem;
+      }
+
+      .nav-list {
+        padding: 12px 0;
+      }
+
+      .nav-list a {
+        margin: 6px 12px;
       }
 
       .main-content {
@@ -282,10 +405,29 @@ import { ChangePasswordDialogComponent } from './shared/components/change-passwo
       }
     }
 
-    /* Desktop and up */
+    /* Desktop and up (1024px and up) */
     @media (min-width: 1024px) {
+      .app-title {
+        font-size: 1.5rem;
+      }
+
+      .user-name {
+        font-size: 1.25rem;
+      }
+
+      .nav-title {
+        font-size: 1.375rem;
+      }
+
       .main-content {
         padding: 32px;
+      }
+    }
+
+    /* Large screens (1200px and up) */
+    @media (min-width: 1200px) {
+      .main-content {
+        padding: 40px;
       }
     }
   `]

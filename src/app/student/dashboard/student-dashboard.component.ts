@@ -20,6 +20,7 @@ import { ExamAttempt } from '../../models/attempt.model';
 import { Result } from '../../models/result.model';
 import { Observable } from 'rxjs';
 import { ExamRulesDialogComponent } from '../../shared/components/exam-rules-dialog/exam-rules-dialog.component';
+import { SchoolLogoComponent } from '../../shared/components/school-logo/school-logo.component';
 
 @Component({
   selector: 'app-student-dashboard',
@@ -33,13 +34,19 @@ import { ExamRulesDialogComponent } from '../../shared/components/exam-rules-dia
     MatChipsModule,
     MatProgressSpinnerModule,
     MatTabsModule,
-    MatTableModule
+    MatTableModule,
+    SchoolLogoComponent
   ],
   template: `
     <div class="student-dashboard-container">
       <div class="dashboard-header">
-        <h1>Welcome, {{ (currentUser$ | async)?.firstName }}!</h1>
-        <p>Your exam dashboard</p>
+        <div class="brand-section">
+          <app-school-logo size="medium"></app-school-logo>
+          <div class="header-text">
+            <h1 class="brand-heading">Welcome, {{ (currentUser$ | async)?.firstName }}!</h1>
+            <p class="brand-subheading">Your exam dashboard</p>
+          </div>
+        </div>
       </div>
 
       <div class="dashboard-content" *ngIf="!isLoading; else loading">
@@ -299,65 +306,101 @@ import { ExamRulesDialogComponent } from '../../shared/components/exam-rules-dia
     </div>
   `,
   styles: [`
+    /* Mobile-first base styles */
     .student-dashboard-container {
-      padding: 20px;
+      padding: 12px;
       max-width: 1200px;
       margin: 0 auto;
+      background: linear-gradient(135deg, var(--anarchy-off-white) 0%, #E5E7EB 100%);
+      min-height: 100vh;
     }
 
     .dashboard-header {
-      margin-bottom: 30px;
+      margin-bottom: 20px; /* Mobile-first: smaller margin */
+      padding: 16px; /* Mobile-first: smaller padding */
+      background: var(--glass-card);
+      border-radius: 16px; /* Mobile-first: smaller radius */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: var(--glass-shadow);
     }
 
-    .dashboard-header h1 {
-      margin: 0 0 8px 0;
-      color: #1976d2;
+    .brand-section {
+      display: flex;
+      flex-direction: column; /* Mobile-first: stacked layout */
+      align-items: center;
+      gap: 12px; /* Mobile-first: smaller gap */
+      text-align: center;
     }
 
-    .dashboard-header p {
+    .header-text h1 {
+      margin: 0 0 6px 0; /* Mobile-first: smaller margin */
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem; /* Mobile-first: smaller font */
+      font-weight: 600;
+      color: var(--anarchy-blue);
+      line-height: 1.2;
+    }
+
+    .header-text p {
       margin: 0;
-      color: #666;
+      font-family: 'Inter', sans-serif;
+      color: var(--anarchy-grey);
+      font-size: 0.875rem; /* Mobile-first: smaller font */
+      line-height: 1.3;
     }
 
     .tab-content {
-      padding: 20px 0;
+      padding: 16px 0; /* Mobile-first: smaller padding */
     }
 
     .exams-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-      gap: 20px;
+      grid-template-columns: 1fr; /* Mobile-first: single column */
+      gap: 16px; /* Mobile-first: smaller gap */
     }
 
     .exam-card {
-      transition: transform 0.2s ease-in-out;
+      background: var(--glass-card);
+      border-radius: 12px; /* Mobile-first: smaller radius */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: var(--glass-shadow);
+      transition: all 0.3s ease;
+      margin: 0;
     }
 
     .exam-card:hover {
-      transform: translateY(-2px);
+      transform: translateY(-2px); /* Mobile-first: smaller transform */
+      box-shadow: 0 8px 25px 0 rgba(31, 38, 135, 0.4);
     }
 
     .exam-description {
-      margin: 12px 0;
+      margin: 10px 0; /* Mobile-first: smaller margin */
       color: #666;
-      font-size: 14px;
+      font-size: 12px; /* Mobile-first: smaller font */
+      line-height: 1.4;
     }
 
     .exam-stats {
       display: flex;
-      gap: 16px;
-      margin: 12px 0;
-      font-size: 14px;
+      flex-direction: column; /* Mobile-first: stacked layout */
+      gap: 6px; /* Mobile-first: smaller gap */
+      margin: 10px 0; /* Mobile-first: smaller margin */
+      font-size: 12px; /* Mobile-first: smaller font */
       color: #666;
     }
 
     .exam-date {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin: 12px 0;
-      font-size: 14px;
+      gap: 6px; /* Mobile-first: smaller gap */
+      margin: 10px 0; /* Mobile-first: smaller margin */
+      font-size: 12px; /* Mobile-first: smaller font */
       color: #666;
+      justify-content: center; /* Mobile-first: centered */
     }
 
     .attempts-table {
@@ -365,15 +408,17 @@ import { ExamRulesDialogComponent } from '../../shared/components/exam-rules-dia
     }
 
     .exam-info h4 {
-      margin: 0 0 4px 0;
-      font-size: 16px;
+      margin: 0 0 3px 0; /* Mobile-first: smaller margin */
+      font-size: 14px; /* Mobile-first: smaller font */
       font-weight: 500;
+      line-height: 1.3;
     }
 
     .exam-info p {
       margin: 0;
       color: #666;
-      font-size: 14px;
+      font-size: 12px; /* Mobile-first: smaller font */
+      line-height: 1.3;
     }
 
     .status-in-progress {
@@ -399,14 +444,14 @@ import { ExamRulesDialogComponent } from '../../shared/components/exam-rules-dia
     .progress-info {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px; /* Mobile-first: smaller gap */
     }
 
     .progress-bar {
       width: 100%;
-      height: 8px;
+      height: 6px; /* Mobile-first: smaller height */
       background-color: #e0e0e0;
-      border-radius: 4px;
+      border-radius: 3px; /* Mobile-first: smaller radius */
       overflow: hidden;
     }
 
@@ -418,12 +463,13 @@ import { ExamRulesDialogComponent } from '../../shared/components/exam-rules-dia
 
     .results-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
+      grid-template-columns: 1fr; /* Mobile-first: single column */
+      gap: 16px; /* Mobile-first: smaller gap */
     }
 
     .result-card {
       transition: transform 0.2s ease-in-out;
+      margin: 0;
     }
 
     .result-card:hover {
@@ -432,9 +478,9 @@ import { ExamRulesDialogComponent } from '../../shared/components/exam-rules-dia
 
     .result-stats {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-      margin: 16px 0;
+      grid-template-columns: repeat(2, 1fr); /* Mobile-first: 2 columns */
+      gap: 12px; /* Mobile-first: smaller gap */
+      margin: 12px 0; /* Mobile-first: smaller margin */
     }
 
     .stat-item {
@@ -442,22 +488,25 @@ import { ExamRulesDialogComponent } from '../../shared/components/exam-rules-dia
     }
 
     .stat-item h3 {
-      margin: 0 0 4px 0;
-      font-size: 20px;
+      margin: 0 0 3px 0; /* Mobile-first: smaller margin */
+      font-size: 16px; /* Mobile-first: smaller font */
       font-weight: bold;
       color: #1976d2;
+      line-height: 1.2;
     }
 
     .stat-item p {
       margin: 0;
       color: #666;
-      font-size: 12px;
+      font-size: 10px; /* Mobile-first: smaller font */
+      line-height: 1.2;
     }
 
     .result-status {
       display: flex;
-      gap: 8px;
-      margin: 16px 0;
+      gap: 6px; /* Mobile-first: smaller gap */
+      margin: 12px 0; /* Mobile-first: smaller margin */
+      justify-content: center; /* Mobile-first: centered */
     }
 
     .status-passed {
@@ -482,25 +531,29 @@ import { ExamRulesDialogComponent } from '../../shared/components/exam-rules-dia
 
     .no-data {
       text-align: center;
-      padding: 40px;
+      padding: 30px; /* Mobile-first: smaller padding */
     }
 
     .no-data mat-icon {
-      font-size: 64px;
-      width: 64px;
-      height: 64px;
+      font-size: 48px; /* Mobile-first: smaller icon */
+      width: 48px;
+      height: 48px;
       color: #ccc;
-      margin-bottom: 16px;
+      margin-bottom: 12px; /* Mobile-first: smaller margin */
     }
 
     .no-data h3 {
-      margin: 0 0 8px 0;
+      margin: 0 0 6px 0; /* Mobile-first: smaller margin */
       color: #666;
+      font-size: 16px; /* Mobile-first: smaller font */
+      line-height: 1.3;
     }
 
     .no-data p {
       margin: 0;
       color: #999;
+      font-size: 12px; /* Mobile-first: smaller font */
+      line-height: 1.4;
     }
 
     .loading-container {
@@ -508,38 +561,39 @@ import { ExamRulesDialogComponent } from '../../shared/components/exam-rules-dia
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 40px;
+      padding: 30px; /* Mobile-first: smaller padding */
     }
 
     .loading-container p {
-      margin-top: 16px;
+      margin-top: 12px; /* Mobile-first: smaller margin */
       color: #666;
+      font-size: 13px; /* Mobile-first: smaller font */
     }
 
     .exam-warning {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-top: 8px;
-      padding: 8px 12px;
+      gap: 6px; /* Mobile-first: smaller gap */
+      margin-top: 6px; /* Mobile-first: smaller margin */
+      padding: 6px 10px; /* Mobile-first: smaller padding */
       background-color: #fff3e0;
       border: 1px solid #ff9800;
       border-radius: 4px;
-      font-size: 12px;
+      font-size: 10px; /* Mobile-first: smaller font */
       color: #e65100;
     }
 
     .exam-warning mat-icon {
-      font-size: 16px;
-      width: 16px;
-      height: 16px;
+      font-size: 14px; /* Mobile-first: smaller icon */
+      width: 14px;
+      height: 14px;
     }
 
     /* Mobile-specific styles */
     .mobile-attempts-list {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px; /* Mobile-first: smaller gap */
     }
 
     .attempt-card {
@@ -550,144 +604,176 @@ import { ExamRulesDialogComponent } from '../../shared/components/exam-rules-dia
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 16px;
+      margin-bottom: 12px; /* Mobile-first: smaller margin */
     }
 
     .attempt-card-header .attempt-info h3 {
-      margin: 0 0 4px 0;
-      font-size: 1.125rem;
+      margin: 0 0 3px 0; /* Mobile-first: smaller margin */
+      font-size: 1rem; /* Mobile-first: smaller font */
       font-weight: 500;
       color: #1976d2;
+      line-height: 1.3;
     }
 
     .attempt-card-header .attempt-info .exam-year {
       margin: 0;
       color: #666;
-      font-size: 0.875rem;
+      font-size: 0.75rem; /* Mobile-first: smaller font */
+      line-height: 1.3;
     }
 
     .attempt-details {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin-bottom: 16px;
+      gap: 6px; /* Mobile-first: smaller gap */
+      margin-bottom: 12px; /* Mobile-first: smaller margin */
     }
 
     .detail-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 4px 0;
+      padding: 3px 0; /* Mobile-first: smaller padding */
     }
 
     .detail-label {
       font-weight: 500;
       color: #666;
-      font-size: 0.875rem;
+      font-size: 0.75rem; /* Mobile-first: smaller font */
     }
 
     .detail-row span:last-child {
       color: #333;
-      font-size: 0.875rem;
+      font-size: 0.75rem; /* Mobile-first: smaller font */
     }
 
     .attempt-actions {
       display: flex;
-      gap: 8px;
+      flex-direction: column; /* Mobile-first: stacked layout */
+      gap: 6px; /* Mobile-first: smaller gap */
     }
 
     .action-button {
       flex: 1;
-      height: 48px;
+      height: 44px; /* Mobile-first: smaller height */
+      font-size: 12px; /* Mobile-first: smaller font */
     }
 
-    /* Mobile header adjustments */
-    @media (max-width: 768px) {
+    /* Small mobile devices (320px and up) */
+    @media (min-width: 320px) {
+      .header-text h1 {
+        font-size: 1.625rem;
+      }
+      
+      .header-text p {
+        font-size: 0.9rem;
+      }
+      
+      .stat-item h3 {
+        font-size: 18px;
+      }
+      
+      .stat-item p {
+        font-size: 11px;
+      }
+    }
+
+    /* Medium mobile devices (480px and up) */
+    @media (min-width: 480px) {
       .student-dashboard-container {
         padding: 16px;
       }
 
-      .dashboard-header h1 {
-        font-size: 1.5rem;
-        text-align: center;
+      .dashboard-header {
+        padding: 20px;
+        margin-bottom: 24px;
+        border-radius: 20px;
       }
 
-      .dashboard-header p {
-        text-align: center;
+      .brand-section {
+        flex-direction: row;
+        text-align: left;
+        gap: 16px;
+      }
+
+      .header-text h1 {
+        font-size: 1.75rem;
+        margin: 0 0 8px 0;
+      }
+
+      .header-text p {
+        font-size: 1rem;
       }
 
       .exams-grid {
         grid-template-columns: 1fr;
-        gap: 16px;
+        gap: 20px;
       }
 
-      .exam-card {
-        margin: 0;
+      .exam-description {
+        font-size: 14px;
+        margin: 12px 0;
       }
 
       .exam-stats {
-        flex-direction: column;
-        gap: 8px;
+        flex-direction: row;
+        gap: 16px;
+        margin: 12px 0;
+        font-size: 14px;
       }
 
       .exam-date {
-        justify-content: center;
+        justify-content: flex-start;
+        font-size: 14px;
+        margin: 12px 0;
       }
 
       .results-grid {
         grid-template-columns: 1fr;
-        gap: 16px;
-      }
-
-      .result-card {
-        margin: 0;
+        gap: 20px;
       }
 
       .result-stats {
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        gap: 16px;
+        margin: 16px 0;
       }
 
       .stat-item h3 {
-        font-size: 18px;
+        font-size: 20px;
+        margin: 0 0 4px 0;
       }
 
       .stat-item p {
-        font-size: 11px;
+        font-size: 12px;
       }
 
       .result-status {
-        justify-content: center;
-      }
-    }
-
-    /* Small mobile devices */
-    @media (max-width: 480px) {
-      .student-dashboard-container {
-        padding: 12px;
-      }
-
-      .dashboard-header h1 {
-        font-size: 1.25rem;
-      }
-
-      .result-stats {
-        grid-template-columns: 1fr;
+        justify-content: flex-start;
         gap: 8px;
+        margin: 16px 0;
       }
 
       .attempt-card-header .attempt-info h3 {
-        font-size: 1rem;
+        font-size: 1.125rem;
+        margin: 0 0 4px 0;
+      }
+
+      .attempt-card-header .attempt-info .exam-year {
+        font-size: 0.875rem;
+      }
+
+      .attempt-details {
+        gap: 8px;
+        margin-bottom: 16px;
       }
 
       .detail-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 2px;
+        padding: 4px 0;
       }
 
       .detail-label {
-        font-size: 0.75rem;
+        font-size: 0.875rem;
       }
 
       .detail-row span:last-child {
@@ -695,7 +781,128 @@ import { ExamRulesDialogComponent } from '../../shared/components/exam-rules-dia
       }
 
       .attempt-actions {
-        flex-direction: column;
+        flex-direction: row;
+        gap: 8px;
+      }
+
+      .action-button {
+        height: 48px;
+        font-size: 13px;
+      }
+    }
+
+    /* Tablet and up (768px and up) */
+    @media (min-width: 768px) {
+      .student-dashboard-container {
+        padding: 20px;
+      }
+
+      .dashboard-header {
+        margin-bottom: 30px;
+        padding: 24px;
+      }
+
+      .brand-section {
+        gap: 20px;
+      }
+
+      .header-text h1 {
+        font-size: 2rem;
+        margin: 0 0 8px 0;
+      }
+
+      .header-text p {
+        font-size: 1.125rem;
+      }
+
+      .exams-grid {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+      }
+
+      .results-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+      }
+
+      .result-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin: 16px 0;
+      }
+
+      .stat-item h3 {
+        font-size: 20px;
+      }
+
+      .stat-item p {
+        font-size: 12px;
+      }
+
+      .result-status {
+        gap: 8px;
+        margin: 16px 0;
+      }
+
+      .no-data {
+        padding: 40px;
+      }
+
+      .no-data mat-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        margin-bottom: 16px;
+      }
+
+      .no-data h3 {
+        font-size: 18px;
+        margin: 0 0 8px 0;
+      }
+
+      .no-data p {
+        font-size: 14px;
+      }
+
+      .loading-container {
+        padding: 40px;
+      }
+
+      .loading-container p {
+        margin-top: 16px;
+        font-size: 14px;
+      }
+
+      .exam-warning {
+        font-size: 12px;
+        padding: 8px 12px;
+        margin-top: 8px;
+        gap: 8px;
+      }
+
+      .exam-warning mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    /* Large screens (1024px and up) */
+    @media (min-width: 1024px) {
+      .header-text h1 {
+        font-size: 2.25rem;
+      }
+
+      .header-text p {
+        font-size: 1.25rem;
+      }
+
+      .stat-item h3 {
+        font-size: 24px;
+      }
+
+      .stat-item p {
+        font-size: 13px;
       }
     }
   `]
