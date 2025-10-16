@@ -31,15 +31,17 @@ import { Question, QuestionType } from '../../models/exam.model';
     MatProgressSpinnerModule
   ],
   template: `
-    <div class="question-view" *ngIf="question">
+    <div class="question-view" *ngIf="question" role="main" aria-label="Question view">
       <!-- Question Header -->
       <div class="question-header">
-        <div class="question-meta">
-          <mat-chip class="question-type">{{ question.type | titlecase }}</mat-chip>
-          <mat-chip class="question-marks">{{ question.marks }} marks</mat-chip>
+        <div class="question-meta" role="group" aria-label="Question information">
+          <mat-chip class="question-type" aria-label="Question type: {{ question.type | titlecase }}">{{ question.type | titlecase }}</mat-chip>
+          <mat-chip class="question-marks" aria-label="Question worth {{ question.marks }} marks">{{ question.marks }} marks</mat-chip>
         </div>
         <div class="question-actions">
-          <button mat-icon-button (click)="toggleFlag()" [class.flagged]="isFlagged">
+          <button mat-icon-button (click)="toggleFlag()" [class.flagged]="isFlagged"
+                  [attr.aria-label]="isFlagged ? 'Remove flag from question' : 'Flag question for review'"
+                  [attr.aria-pressed]="isFlagged">
             <mat-icon>flag</mat-icon>
           </button>
         </div>
@@ -47,52 +49,63 @@ import { Question, QuestionType } from '../../models/exam.model';
 
       <!-- Question Text -->
       <div class="question-text">
-        <h2>{{ question.questionText }}</h2>
-        <p *ngIf="question.description" class="question-description">{{ question.description }}</p>
+        <h2 id="question-text">{{ question.questionText }}</h2>
+        <p *ngIf="question.description" class="question-description" id="question-description">{{ question.description }}</p>
       </div>
 
       <!-- Question Options -->
-      <div class="question-options">
+      <div class="question-options" role="group" [attr.aria-labelledby]="'question-text'">
         <form [formGroup]="answerForm" (ngModelChange)="onAnswerChange()">
           <!-- Multiple Choice -->
-          <div *ngIf="question.type === 'multiple_choice'" class="option-group">
-            <mat-radio-group formControlName="answer" class="radio-group" [disabled]="isPaused">
+          <fieldset *ngIf="question.type === 'multiple_choice'" class="option-group">
+            <legend class="sr-only">Select one answer</legend>
+            <mat-radio-group formControlName="answer" class="radio-group" [disabled]="isPaused"
+                           [attr.aria-labelledby]="'question-text'"
+                           [attr.aria-describedby]="question.description ? 'question-description' : null">
               <mat-radio-button 
                 *ngFor="let option of question.options; let i = index" 
                 [value]="option"
-                class="option-item">
+                class="option-item"
+                [attr.aria-label]="'Option ' + getOptionLabel(i) + ': ' + option">
                 <div class="option-content">
-                  <span class="option-label">{{ getOptionLabel(i) }}</span>
+                  <span class="option-label" aria-hidden="true">{{ getOptionLabel(i) }}</span>
                   <span class="option-text">{{ option }}</span>
                 </div>
               </mat-radio-button>
             </mat-radio-group>
-          </div>
+          </fieldset>
 
 
           <!-- True/False -->
-          <div *ngIf="question.type === 'true_false'" class="option-group">
-            <mat-radio-group formControlName="answer" class="radio-group" [disabled]="isPaused">
-              <mat-radio-button value="true" class="option-item">
+          <fieldset *ngIf="question.type === 'true_false'" class="option-group">
+            <legend class="sr-only">Select true or false</legend>
+            <mat-radio-group formControlName="answer" class="radio-group" [disabled]="isPaused"
+                           [attr.aria-labelledby]="'question-text'"
+                           [attr.aria-describedby]="question.description ? 'question-description' : null">
+              <mat-radio-button value="true" class="option-item" aria-label="Option A: True">
                 <div class="option-content">
-                  <span class="option-label">A</span>
+                  <span class="option-label" aria-hidden="true">A</span>
                   <span class="option-text">True</span>
                 </div>
               </mat-radio-button>
-              <mat-radio-button value="false" class="option-item">
+              <mat-radio-button value="false" class="option-item" aria-label="Option B: False">
                 <div class="option-content">
-                  <span class="option-label">B</span>
+                  <span class="option-label" aria-hidden="true">B</span>
                   <span class="option-text">False</span>
                 </div>
               </mat-radio-button>
             </mat-radio-group>
-          </div>
+          </fieldset>
 
           <!-- Short Answer -->
           <div *ngIf="question.type === 'short_answer'" class="option-group">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Your Answer</mat-label>
-              <input matInput formControlName="answer" placeholder="Enter your answer" [disabled]="isPaused">
+              <input matInput formControlName="answer" 
+                     placeholder="Enter your answer" 
+                     [disabled]="isPaused"
+                     [attr.aria-labelledby]="'question-text'"
+                     [attr.aria-describedby]="question.description ? 'question-description' : null">
             </mat-form-field>
           </div>
 
@@ -100,7 +113,12 @@ import { Question, QuestionType } from '../../models/exam.model';
           <div *ngIf="question.type === 'essay'" class="option-group">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Your Answer</mat-label>
-              <textarea matInput formControlName="answer" placeholder="Enter your answer" rows="6" [disabled]="isPaused"></textarea>
+              <textarea matInput formControlName="answer" 
+                        placeholder="Enter your answer" 
+                        rows="6" 
+                        [disabled]="isPaused"
+                        [attr.aria-labelledby]="'question-text'"
+                        [attr.aria-describedby]="question.description ? 'question-description' : null"></textarea>
             </mat-form-field>
           </div>
 
@@ -108,19 +126,21 @@ import { Question, QuestionType } from '../../models/exam.model';
       </div>
 
       <!-- Question Footer -->
-      <div class="question-footer">
-        <div class="question-info">
+      <div class="question-footer" role="toolbar" aria-label="Question actions">
+        <div class="question-info" aria-live="polite" aria-label="Question progress">
           <span>Question {{ questionIndex + 1 }} of {{ totalQuestions }}</span>
         </div>
         <div class="question-actions">
-          <button mat-button (click)="clearAnswer()" *ngIf="hasAnswer()" [disabled]="isPaused">
-            <mat-icon>clear</mat-icon>
+          <button mat-button (click)="clearAnswer()" *ngIf="hasAnswer()" [disabled]="isPaused"
+                  aria-label="Clear current answer">
+            <mat-icon aria-hidden="true">clear</mat-icon>
             Clear Answer
           </button>
           <button mat-raised-button color="primary" (click)="submitAnswer()" 
-                  [disabled]="!hasAnswer() || isSubmitting || isPaused">
-            <mat-icon *ngIf="!isSubmitting">save</mat-icon>
-            <mat-spinner *ngIf="isSubmitting" diameter="20"></mat-spinner>
+                  [disabled]="!hasAnswer() || isSubmitting || isPaused"
+                  [attr.aria-label]="isSubmitting ? 'Saving answer...' : 'Save current answer'">
+            <mat-icon *ngIf="!isSubmitting" aria-hidden="true">save</mat-icon>
+            <mat-spinner *ngIf="isSubmitting" diameter="20" aria-label="Saving"></mat-spinner>
             {{ isSubmitting ? 'Saving...' : 'Save Answer' }}
           </button>
         </div>

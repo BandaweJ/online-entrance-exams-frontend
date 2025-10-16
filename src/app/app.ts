@@ -37,31 +37,41 @@ import { toggleTheme } from './core/store/ui/ui.actions';
   ],
   template: `
     <div class="app-container">
+      <!-- Skip to main content link for screen readers -->
+      <a href="#main-content" class="skip-link">Skip to main content</a>
+      
       <!-- Mobile-First Toolbar -->
-      <mat-toolbar color="primary" class="app-toolbar" *ngIf="isAuthenticated$ | async">
-        <button mat-icon-button (click)="toggleSidenav()" class="menu-button">
+      <mat-toolbar color="primary" class="app-toolbar" *ngIf="isAuthenticated$ | async" role="banner">
+        <button mat-icon-button (click)="toggleSidenav()" class="menu-button"
+                aria-label="Toggle navigation menu"
+                aria-expanded="false"
+                [attr.aria-controls]="'navigation-menu'">
           <mat-icon>menu</mat-icon>
         </button>
         
         <!-- Mobile: Show app name, Desktop: Show full title -->
-        <span class="app-title mobile-only">Exam System</span>
-        <span class="app-title tablet-up">School Entrance Exam System</span>
+        <h1 class="app-title mobile-only">Exam System</h1>
+        <h1 class="app-title tablet-up">School Entrance Exam System</h1>
         
         <span class="spacer"></span>
         
         <!-- Dark Mode Toggle Button -->
         <button mat-icon-button (click)="toggleDarkMode()" class="theme-toggle-button" 
-                [attr.aria-label]="(theme$ | async) === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
+                [attr.aria-label]="(theme$ | async) === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+                [attr.aria-pressed]="(theme$ | async) === 'dark'">
           <mat-icon>{{ (theme$ | async) === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
         </button>
         
         <!-- Mobile: Show user initials, Desktop: Show full name -->
-        <span *ngIf="currentUser$ | async as user" class="user-info">
-          <span class="user-name mobile-only">{{ user.firstName?.charAt(0) }}{{ user.lastName?.charAt(0) }}</span>
-          <span class="user-name tablet-up">Welcome, {{ user.firstName }} {{ user.lastName }}</span>
+        <span *ngIf="currentUser$ | async as user" class="user-info" aria-label="Current user">
+          <span class="user-name mobile-only" aria-label="User initials">{{ user.firstName?.charAt(0) }}{{ user.lastName?.charAt(0) }}</span>
+          <span class="user-name tablet-up" aria-label="Welcome message">Welcome, {{ user.firstName }} {{ user.lastName }}</span>
         </span>
         
-        <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-menu-button">
+        <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-menu-button"
+                aria-label="User account menu"
+                aria-haspopup="menu"
+                [attr.aria-expanded]="false">
           <mat-icon>account_circle</mat-icon>
         </button>
         
@@ -83,66 +93,82 @@ import { toggleTheme } from './core/store/ui/ui.actions';
                      [mode]="isMobile ? 'over' : 'side'" 
                      [opened]="isMobile ? false : sidenavOpen"
                      [disableClose]="!isMobile"
-                     class="navigation-sidenav">
+                     class="navigation-sidenav"
+                     id="navigation-menu"
+                     role="navigation"
+                     aria-label="Main navigation">
           
           <!-- Navigation Header -->
           <div class="nav-header">
-            <h3 class="nav-title">Navigation</h3>
-            <button mat-icon-button (click)="closeSidenav()" class="close-nav mobile-only">
+            <h2 class="nav-title">Navigation</h2>
+            <button mat-icon-button (click)="closeSidenav()" class="close-nav mobile-only"
+                    aria-label="Close navigation menu">
               <mat-icon>close</mat-icon>
             </button>
           </div>
           
-          <mat-nav-list class="nav-list">
+          <mat-nav-list class="nav-list" role="list">
             <ng-container *ngIf="(currentUser$ | async)?.role === 'admin'">
-              <a mat-list-item routerLink="/admin/dashboard" (click)="onNavItemClick()">
-                <mat-icon matListItemIcon>dashboard</mat-icon>
+              <a mat-list-item routerLink="/admin/dashboard" (click)="onNavItemClick()" 
+                 role="listitem" aria-label="Go to admin dashboard">
+                <mat-icon matListItemIcon aria-hidden="true">dashboard</mat-icon>
                 <span matListItemTitle>Dashboard</span>
               </a>
-              <a mat-list-item routerLink="/admin/exams" (click)="onNavItemClick()">
-                <mat-icon matListItemIcon>quiz</mat-icon>
+              <a mat-list-item routerLink="/admin/exams" (click)="onNavItemClick()" 
+                 role="listitem" aria-label="Manage exams">
+                <mat-icon matListItemIcon aria-hidden="true">quiz</mat-icon>
                 <span matListItemTitle>Exams</span>
               </a>
-              <a mat-list-item routerLink="/admin/students" (click)="onNavItemClick()">
-                <mat-icon matListItemIcon>people</mat-icon>
+              <a mat-list-item routerLink="/admin/students" (click)="onNavItemClick()" 
+                 role="listitem" aria-label="Manage students">
+                <mat-icon matListItemIcon aria-hidden="true">people</mat-icon>
                 <span matListItemTitle>Students</span>
               </a>
-              <a mat-list-item routerLink="/admin/results" (click)="onNavItemClick()">
-                <mat-icon matListItemIcon>assessment</mat-icon>
+              <a mat-list-item routerLink="/admin/results" (click)="onNavItemClick()" 
+                 role="listitem" aria-label="View exam results">
+                <mat-icon matListItemIcon aria-hidden="true">assessment</mat-icon>
                 <span matListItemTitle>Results</span>
               </a>
-              <a mat-list-item routerLink="/admin/users" (click)="onNavItemClick()">
-                <mat-icon matListItemIcon>admin_panel_settings</mat-icon>
+              <a mat-list-item routerLink="/admin/users" (click)="onNavItemClick()" 
+                 role="listitem" aria-label="Manage users">
+                <mat-icon matListItemIcon aria-hidden="true">admin_panel_settings</mat-icon>
                 <span matListItemTitle>User Management</span>
               </a>
-              <a mat-list-item routerLink="/admin/analytics" (click)="onNavItemClick()">
-                <mat-icon matListItemIcon>analytics</mat-icon>
+              <a mat-list-item routerLink="/admin/analytics" (click)="onNavItemClick()" 
+                 role="listitem" aria-label="View analytics dashboard">
+                <mat-icon matListItemIcon aria-hidden="true">analytics</mat-icon>
                 <span matListItemTitle>Analytics</span>
               </a>
-              <a mat-list-item routerLink="/admin/profile" (click)="onNavItemClick()">
-                <mat-icon matListItemIcon>person</mat-icon>
+              <a mat-list-item routerLink="/admin/profile" (click)="onNavItemClick()" 
+                 role="listitem" aria-label="View my profile">
+                <mat-icon matListItemIcon aria-hidden="true">person</mat-icon>
                 <span matListItemTitle>My Profile</span>
               </a>
             </ng-container>
             <ng-container *ngIf="(currentUser$ | async)?.role === 'student'">
-              <a mat-list-item routerLink="/student/dashboard" (click)="onNavItemClick()">
-                <mat-icon matListItemIcon>dashboard</mat-icon>
+              <a mat-list-item routerLink="/student/dashboard" (click)="onNavItemClick()" 
+                 role="listitem" aria-label="Go to student dashboard">
+                <mat-icon matListItemIcon aria-hidden="true">dashboard</mat-icon>
                 <span matListItemTitle>Dashboard</span>
               </a>
-              <a mat-list-item routerLink="/student/exams" (click)="onNavItemClick()">
-                <mat-icon matListItemIcon>quiz</mat-icon>
+              <a mat-list-item routerLink="/student/exams" (click)="onNavItemClick()" 
+                 role="listitem" aria-label="View my exams">
+                <mat-icon matListItemIcon aria-hidden="true">quiz</mat-icon>
                 <span matListItemTitle>My Exams</span>
               </a>
-              <a mat-list-item routerLink="/student/results" (click)="onNavItemClick()">
-                <mat-icon matListItemIcon>assessment</mat-icon>
+              <a mat-list-item routerLink="/student/results" (click)="onNavItemClick()" 
+                 role="listitem" aria-label="View my exam results">
+                <mat-icon matListItemIcon aria-hidden="true">assessment</mat-icon>
                 <span matListItemTitle>My Results</span>
               </a>
-              <a mat-list-item routerLink="/student/analytics" (click)="onNavItemClick()">
-                <mat-icon matListItemIcon>analytics</mat-icon>
+              <a mat-list-item routerLink="/student/analytics" (click)="onNavItemClick()" 
+                 role="listitem" aria-label="View my performance analytics">
+                <mat-icon matListItemIcon aria-hidden="true">analytics</mat-icon>
                 <span matListItemTitle>My Analytics</span>
               </a>
-              <a mat-list-item routerLink="/student/profile" (click)="onNavItemClick()">
-                <mat-icon matListItemIcon>person</mat-icon>
+              <a mat-list-item routerLink="/student/profile" (click)="onNavItemClick()" 
+                 role="listitem" aria-label="View my profile">
+                <mat-icon matListItemIcon aria-hidden="true">person</mat-icon>
                 <span matListItemTitle>My Profile</span>
               </a>
             </ng-container>
@@ -150,14 +176,14 @@ import { toggleTheme } from './core/store/ui/ui.actions';
         </mat-sidenav>
 
         <mat-sidenav-content class="main-sidenav-content">
-          <main class="main-content">
+          <main class="main-content" id="main-content" role="main" aria-label="Main content">
             <router-outlet></router-outlet>
           </main>
         </mat-sidenav-content>
       </mat-sidenav-container>
 
       <!-- Auth Container -->
-      <div *ngIf="!(isAuthenticated$ | async)" class="auth-container">
+      <div *ngIf="!(isAuthenticated$ | async)" class="auth-container" role="main" aria-label="Authentication">
         <router-outlet></router-outlet>
       </div>
     </div>
@@ -503,6 +529,11 @@ export class App implements OnInit, OnDestroy {
         localStorage.setItem('theme', theme);
       }
     });
+
+    // Add keyboard navigation support
+    if (isPlatformBrowser(this.platformId)) {
+      document.addEventListener('keydown', this.handleKeydown.bind(this));
+    }
   }
 
   ngOnDestroy() {
@@ -511,6 +542,7 @@ export class App implements OnInit, OnDestroy {
     }
     if (isPlatformBrowser(this.platformId)) {
       window.removeEventListener('resize', () => this.checkScreenSize());
+      document.removeEventListener('keydown', this.handleKeydown.bind(this));
     }
   }
 
@@ -539,6 +571,12 @@ export class App implements OnInit, OnDestroy {
     } else {
       this.sidenavOpen = !this.sidenavOpen;
     }
+    
+    // Update ARIA attributes
+    const menuButton = document.querySelector('.menu-button');
+    if (menuButton) {
+      menuButton.setAttribute('aria-expanded', this.sidenavOpen.toString());
+    }
   }
 
   closeSidenav() {
@@ -546,6 +584,12 @@ export class App implements OnInit, OnDestroy {
       this.sidenav.close();
     } else {
       this.sidenavOpen = false;
+    }
+    
+    // Update ARIA attributes
+    const menuButton = document.querySelector('.menu-button');
+    if (menuButton) {
+      menuButton.setAttribute('aria-expanded', 'false');
     }
   }
 
@@ -566,5 +610,24 @@ export class App implements OnInit, OnDestroy {
 
   logout() {
     this.authService.logout();
+  }
+
+  private handleKeydown(event: KeyboardEvent) {
+    // Handle Escape key to close sidenav
+    if (event.key === 'Escape' && this.sidenavOpen) {
+      this.closeSidenav();
+    }
+    
+    // Handle Alt+M to toggle menu
+    if (event.altKey && event.key === 'm') {
+      event.preventDefault();
+      this.toggleSidenav();
+    }
+    
+    // Handle Alt+T to toggle theme
+    if (event.altKey && event.key === 't') {
+      event.preventDefault();
+      this.toggleDarkMode();
+    }
   }
 }
