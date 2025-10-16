@@ -1026,7 +1026,7 @@ export class StudentDashboardComponent implements OnInit {
   viewResult(attempt: ExamAttempt) {
     console.log('Viewing result for attempt:', attempt.id);
     
-    // First, try to find the result for this attempt
+    // Find the result for this attempt
     const existingResult = this.results.find(result => result.attemptId === attempt.id);
     
     if (existingResult) {
@@ -1035,45 +1035,34 @@ export class StudentDashboardComponent implements OnInit {
       this.router.navigate(['/student/results', existingResult.id]);
     } else {
       console.log('No existing result found, refreshing results...');
-      this.refreshResultsAndNavigate(attempt.id, 0);
-    }
-  }
-
-  private refreshResultsAndNavigate(attemptId: string, retryCount: number) {
-    const maxRetries = 3;
-    const retryDelay = 2000; // 2 seconds
-
-    this.resultsService.getStudentResults().subscribe({
-      next: (results: Result[]) => {
-        this.results = results;
-        const foundResult = results.find(result => result.attemptId === attemptId);
-        
-        if (foundResult) {
-          console.log('Found result after refresh:', foundResult.id);
-          this.router.navigate(['/student/results', foundResult.id]);
-        } else if (retryCount < maxRetries) {
-          console.log(`Result not found, retrying in ${retryDelay}ms... (attempt ${retryCount + 1}/${maxRetries})`);
-          setTimeout(() => {
-            this.refreshResultsAndNavigate(attemptId, retryCount + 1);
-          }, retryDelay);
-        } else {
-          console.error('Result still not found after all retries');
+      // Refresh results once and navigate if found
+      this.resultsService.getStudentResults().subscribe({
+        next: (results: Result[]) => {
+          this.results = results;
+          const foundResult = results.find(result => result.attemptId === attempt.id);
+          
+          if (foundResult) {
+            console.log('Found result after refresh:', foundResult.id);
+            this.router.navigate(['/student/results', foundResult.id]);
+          } else {
+            console.error('Result not found');
+            this.snackBar.open(
+              'Result not found. Please contact support if this issue persists.',
+              'Close',
+              { duration: 5000, panelClass: ['error-snackbar'] }
+            );
+          }
+        },
+        error: (error) => {
+          console.error('Error refreshing results:', error);
           this.snackBar.open(
-            'Result is still being processed. Please wait a few minutes and try again, or contact support if the issue persists.',
+            'Error loading results. Please try again.',
             'Close',
-            { duration: 8000, panelClass: ['warning-snackbar'] }
+            { duration: 5000, panelClass: ['error-snackbar'] }
           );
         }
-      },
-      error: (error) => {
-        console.error('Error refreshing results:', error);
-        this.snackBar.open(
-          'Error loading results. Please try again.',
-          'Close',
-          { duration: 5000, panelClass: ['error-snackbar'] }
-        );
-      }
-    });
+      });
+    }
   }
 
   viewDetailedResult(resultId: string) {
