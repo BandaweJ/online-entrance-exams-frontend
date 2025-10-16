@@ -483,12 +483,12 @@ export class StudentAnalyticsComponent implements OnInit, OnDestroy {
     this.resultsService.getStudentStats()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (stats) => {
+        next: (stats: any) => {
           this.studentStats = stats;
           this.updatePerformanceChart();
           this.isLoading = false;
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error loading student stats:', error);
           this.isLoading = false;
         }
@@ -501,7 +501,7 @@ export class StudentAnalyticsComponent implements OnInit, OnDestroy {
           this.recentResults = results.slice(0, 10); // Last 10 results
           this.updateGradeDistributionChart();
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error loading student results:', error);
         }
       });

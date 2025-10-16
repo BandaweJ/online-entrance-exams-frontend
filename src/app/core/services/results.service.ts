@@ -24,6 +24,10 @@ export class ResultsService {
     return this.http.get<Result[]>(`${this.API_URL}/results/student`);
   }
 
+  getStudentStats(): Observable<any> {
+    return this.http.get<any>(`${this.API_URL}/results/student/stats`);
+  }
+
   getExamResults(examId: string): Observable<Result[]> {
     return this.http.get<Result[]>(`${this.API_URL}/results/exam/${examId}`);
   }

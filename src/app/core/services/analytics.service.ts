@@ -147,9 +147,15 @@ export class AnalyticsService {
       if (filters.sortBy) params = params.set('sortBy', filters.sortBy);
     }
 
-    return this.http.get(`${this.apiUrl}/export/${type}`, { 
-      params,
-      responseType: format === 'csv' ? 'text' : 'json'
-    });
+    if (format === 'csv') {
+      return this.http.get(`${this.apiUrl}/export/${type}`, { 
+        params,
+        responseType: 'text'
+      });
+    } else {
+      return this.http.get(`${this.apiUrl}/export/${type}`, { 
+        params
+      });
+    }
   }
 }
