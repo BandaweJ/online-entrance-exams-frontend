@@ -93,12 +93,14 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 
         <mat-card class="stat-card glassmorphism">
           <mat-card-content>
-            <div class="stat-icon">
-              <mat-icon>block</mat-icon>
-            </div>
-            <div class="stat-info">
-              <h3>{{ blockedIps }}</h3>
-              <p>Blocked IPs</p>
+            <div class="stat-content">
+              <div class="stat-icon">
+                <mat-icon>block</mat-icon>
+              </div>
+              <div class="stat-info">
+                <h3>{{ blockedIps }}</h3>
+                <p>Blocked IPs</p>
+              </div>
             </div>
           </mat-card-content>
         </mat-card>
