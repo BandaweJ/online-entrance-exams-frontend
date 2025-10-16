@@ -706,9 +706,21 @@ export class ResultsListComponent implements OnInit {
     this.resultsService.getResults().subscribe({
       next: (results) => {
         console.log('Results loaded:', results);
+        console.log('Sample result structure:', results[0]);
         this.results = results;
         this.filteredResults = [...results];
         this.isLoading = false;
+        
+        // Log student data structure for debugging
+        if (results.length > 0) {
+          console.log('First result student data:', {
+            hasStudent: !!results[0].student,
+            student: results[0].student,
+            firstName: results[0].student?.firstName,
+            lastName: results[0].student?.lastName,
+            email: results[0].student?.email
+          });
+        }
       },
       error: (error) => {
         console.error('Error loading results:', error);
@@ -730,22 +742,48 @@ export class ResultsListComponent implements OnInit {
   }
 
   applyFilters() {
+    console.log('Applying filters...', {
+      searchTerm: this.searchTerm,
+      selectedExamFilter: this.selectedExamFilter,
+      totalResults: this.results.length
+    });
+
     // First apply exam filter
     let filteredByExam = this.results;
     if (this.selectedExamFilter) {
       filteredByExam = this.results.filter(result => result.examId === this.selectedExamFilter);
+      console.log('Filtered by exam:', filteredByExam.length);
     }
     
     // Then apply search filter if there's a search term
     if (this.searchTerm.trim()) {
       const searchTerm = this.searchTerm.toLowerCase();
-      this.filteredResults = filteredByExam.filter(result =>
-        result.student?.firstName?.toLowerCase().includes(searchTerm) ||
-        result.student?.lastName?.toLowerCase().includes(searchTerm) ||
-        result.student?.email?.toLowerCase().includes(searchTerm)
-      );
+      console.log('Searching for:', searchTerm);
+      
+      this.filteredResults = filteredByExam.filter(result => {
+        const firstName = result.student?.firstName?.toLowerCase() || '';
+        const lastName = result.student?.lastName?.toLowerCase() || '';
+        const email = result.student?.email?.toLowerCase() || '';
+        
+        const matches = firstName.includes(searchTerm) || 
+                      lastName.includes(searchTerm) || 
+                      email.includes(searchTerm);
+        
+        if (matches) {
+          console.log('Match found:', {
+            firstName: result.student?.firstName,
+            lastName: result.student?.lastName,
+            email: result.student?.email
+          });
+        }
+        
+        return matches;
+      });
+      
+      console.log('Search results:', this.filteredResults.length);
     } else {
       this.filteredResults = filteredByExam;
+      console.log('No search term, showing all filtered results:', this.filteredResults.length);
     }
   }
 
