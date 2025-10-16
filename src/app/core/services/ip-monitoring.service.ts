@@ -78,13 +78,18 @@ export class IpMonitoringService {
     limit: number;
     totalPages: number;
   }> {
+    // Filter out undefined values to prevent them from being sent as "undefined" strings
+    const cleanFilter = Object.fromEntries(
+      Object.entries(filter).filter(([_, value]) => value !== undefined && value !== null && value !== '')
+    );
+    
     return this.http.get<{
       activities: IpActivity[];
       total: number;
       page: number;
       limit: number;
       totalPages: number;
-    }>(`${this.apiUrl}/activities`, { params: filter as any });
+    }>(`${this.apiUrl}/activities`, { params: cleanFilter as any });
   }
 
   getIpStats(ipAddress: string, hours: number = 24): Observable<IpStats> {
