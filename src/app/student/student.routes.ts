@@ -27,6 +27,10 @@ export const studentRoutes: Routes = [
     loadComponent: () => import('./exam/results-screen.component').then(m => m.ResultsScreenComponent)
   },
   {
+    path: 'analytics',
+    loadComponent: () => import('./analytics/student-analytics.component').then(m => m.StudentAnalyticsComponent)
+  },
+  {
     path: 'profile',
     loadComponent: () => import('../shared/components/user-profile/user-profile.component').then(m => m.UserProfileComponent)
   }

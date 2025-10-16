@@ -159,6 +159,10 @@ interface RecentActivity {
                 <mat-icon>security</mat-icon>
                 IP Monitoring
               </button>
+              <button mat-raised-button routerLink="/admin/analytics" class="btn-brand-primary">
+                <mat-icon>analytics</mat-icon>
+                Analytics Dashboard
+              </button>
             </div>
           </mat-card-content>
         </mat-card>

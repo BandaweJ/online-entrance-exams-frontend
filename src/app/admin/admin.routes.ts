@@ -61,5 +61,9 @@ export const adminRoutes: Routes = [
   {
     path: 'ip-monitoring',
     loadComponent: () => import('./ip-monitoring/ip-monitoring.component').then(m => m.IpMonitoringComponent)
+  },
+  {
+    path: 'analytics',
+    loadComponent: () => import('./analytics/analytics-dashboard.component').then(m => m.AnalyticsDashboardComponent)
   }
 ];

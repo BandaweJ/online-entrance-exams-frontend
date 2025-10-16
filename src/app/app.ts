@@ -103,6 +103,10 @@ import { ChangePasswordDialogComponent } from './shared/components/change-passwo
                 <mat-icon matListItemIcon>admin_panel_settings</mat-icon>
                 <span matListItemTitle>User Management</span>
               </a>
+              <a mat-list-item routerLink="/admin/analytics" (click)="onNavItemClick()">
+                <mat-icon matListItemIcon>analytics</mat-icon>
+                <span matListItemTitle>Analytics</span>
+              </a>
               <a mat-list-item routerLink="/admin/profile" (click)="onNavItemClick()">
                 <mat-icon matListItemIcon>person</mat-icon>
                 <span matListItemTitle>My Profile</span>
@@ -120,6 +124,10 @@ import { ChangePasswordDialogComponent } from './shared/components/change-passwo
               <a mat-list-item routerLink="/student/results" (click)="onNavItemClick()">
                 <mat-icon matListItemIcon>assessment</mat-icon>
                 <span matListItemTitle>My Results</span>
+              </a>
+              <a mat-list-item routerLink="/student/analytics" (click)="onNavItemClick()">
+                <mat-icon matListItemIcon>analytics</mat-icon>
+                <span matListItemTitle>My Analytics</span>
               </a>
               <a mat-list-item routerLink="/student/profile" (click)="onNavItemClick()">
                 <mat-icon matListItemIcon>person</mat-icon>
