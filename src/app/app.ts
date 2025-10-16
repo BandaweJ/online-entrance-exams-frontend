@@ -544,6 +544,8 @@ export class App implements OnInit, OnDestroy {
   closeSidenav() {
     if (this.isMobile) {
       this.sidenav.close();
+    } else {
+      this.sidenavOpen = false;
     }
   }
 
