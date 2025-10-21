@@ -159,9 +159,23 @@ export interface SectionDialogData {
     }
 
     .save-button {
-      background: var(--brand-gradient);
-      color: white;
-      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+      background: var(--anarchy-blue) !important;
+      color: white !important;
+      box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3);
+      border: 2px solid var(--anarchy-blue);
+      font-weight: 600;
+    }
+
+    .save-button:hover {
+      background: #1e3a8a !important;
+      box-shadow: 0 6px 20px rgba(30, 58, 138, 0.4);
+    }
+
+    .save-button:disabled {
+      background: #9ca3af !important;
+      color: #6b7280 !important;
+      box-shadow: none;
+      border-color: #9ca3af;
     }
 
     mat-form-field {

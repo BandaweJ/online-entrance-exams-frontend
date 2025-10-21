@@ -203,6 +203,26 @@ import { CreateExamRequest } from '../../models/exam.model';
       font-weight: 500;
     }
 
+    .form-actions button[color="primary"] {
+      background: var(--anarchy-blue) !important;
+      color: white !important;
+      box-shadow: 0 4px 15px rgba(30, 58, 138, 0.3);
+      border: 2px solid var(--anarchy-blue);
+      font-weight: 600;
+    }
+
+    .form-actions button[color="primary"]:hover {
+      background: #1e3a8a !important;
+      box-shadow: 0 6px 20px rgba(30, 58, 138, 0.4);
+    }
+
+    .form-actions button[color="primary"]:disabled {
+      background: #9ca3af !important;
+      color: #6b7280 !important;
+      box-shadow: none;
+      border-color: #9ca3af;
+    }
+
     mat-form-field {
       width: 100%;
     }
