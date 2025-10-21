@@ -48,6 +48,13 @@ export interface SectionDialogData {
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Section Instructions</mat-label>
+              <textarea matInput formControlName="instructions" placeholder="Enter instructions for this section (e.g., comprehension passages, reading materials)" rows="4"></textarea>
+              <mat-icon matSuffix>assignment</mat-icon>
+              <mat-hint>Use this for comprehension passages, reading materials, or special instructions for this section</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
               <mat-label>Order</mat-label>
               <input matInput type="number" formControlName="order" placeholder="1" min="1">
               <mat-icon matSuffix>sort</mat-icon>
@@ -309,6 +316,7 @@ export class SectionDialogComponent {
     this.sectionForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
       description: [''],
+      instructions: [''],
       order: [1, [Validators.required, Validators.min(1)]]
     });
 

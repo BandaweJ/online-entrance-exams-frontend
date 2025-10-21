@@ -64,6 +64,15 @@ import { CreateExamRequest } from '../../models/exam.model';
             </div>
 
             <div class="form-row">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Exam Instructions</mat-label>
+                <textarea matInput formControlName="instructions" placeholder="Enter general instructions for students before the exam begins" rows="4"></textarea>
+                <mat-icon matSuffix>assignment</mat-icon>
+                <mat-hint>These instructions will be shown to students before they start the exam</mat-hint>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
               <mat-form-field appearance="outline" class="half-width">
                 <mat-label>Year</mat-label>
                 <input matInput type="number" formControlName="year" placeholder="2024" min="2020" max="2030">
@@ -341,6 +350,7 @@ export class ExamCreateComponent implements OnInit {
     this.examForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
       description: [''],
+      instructions: [''],
       year: [new Date().getFullYear(), [Validators.required, Validators.min(2020), Validators.max(2030)]],
       examDate: ['', [Validators.required]],
       durationMinutes: [120, [Validators.required, Validators.min(30), Validators.max(300)]]
