@@ -12,6 +12,8 @@ import { MatChipsModule } from '@angular/material/chips';
 import { CountdownDisplayComponent } from '../../shared/components/countdown-display/countdown-display.component';
 import { ExamNavigationComponent } from './exam-navigation.component';
 import { QuestionViewComponent } from './question-view.component';
+import { ExamInstructionsComponent } from '../../shared/components/exam-instructions/exam-instructions.component';
+import { SectionInstructionsComponent } from '../../shared/components/section-instructions/section-instructions.component';
 import { ExamService } from '../../core/services/exam.service';
 import { AttemptsService } from '../../core/services/attempts.service';
 import { AnswersService } from '../../core/services/answers.service';
@@ -39,6 +41,8 @@ import { map, filter, debounceTime } from 'rxjs/operators';
     CountdownDisplayComponent,
     ExamNavigationComponent,
     QuestionViewComponent,
+    ExamInstructionsComponent,
+    SectionInstructionsComponent,
     SchoolLogoComponent
   ],
   template: `
@@ -112,35 +116,34 @@ import { map, filter, debounceTime } from 'rxjs/operators';
 
       <!-- Main Content -->
       <div class="exam-content" [class.paused]="attempt.status === 'paused'">
-        <!-- Navigation Sidebar -->
-        <div class="navigation-sidebar">
-          <app-exam-navigation
-            [questions]="questions"
-            [currentQuestionIndex]="currentQuestionIndex"
-            [answeredQuestions]="answeredQuestions"
-            [draftedQuestions]="draftedQuestions"
-            [flaggedQuestions]="flaggedQuestions"
-            [isPaused]="attempt.status === 'paused'"
-            (questionSelected)="onQuestionSelected($event)">
-          </app-exam-navigation>
+        <!-- Exam Instructions -->
+        <div *ngIf="examFlowState === 'instructions'">
+          <app-exam-instructions
+            [title]="'Exam Instructions'"
+            [instructions]="exam?.instructions || 'No specific instructions for this exam.'"
+            [continueButtonText]="'Start Exam'"
+            (continue)="onStartExam()">
+          </app-exam-instructions>
         </div>
 
-        <!-- Mobile Floating Navigation Button -->
-        <button mat-fab color="primary" class="mobile-nav-fab" 
-                (click)="toggleMobileNav()" 
-                *ngIf="isMobile">
-          <mat-icon>{{ showMobileNav ? 'close' : 'list' }}</mat-icon>
-        </button>
+        <!-- Section Instructions -->
+        <div *ngIf="examFlowState === 'section-instructions'">
+          <app-section-instructions
+            [sectionTitle]="getCurrentSection()?.title || ''"
+            [sectionDescription]="getCurrentSection()?.description || ''"
+            [instructions]="getCurrentSection()?.instructions || ''"
+            [totalMarks]="getCurrentSection()?.totalMarks || 0"
+            [questionCount]="getCurrentSection()?.questionCount || 0"
+            [showBackButton]="currentSectionIndex > 0"
+            (startSection)="onStartSection()"
+            (back)="onBackToPreviousSection()">
+          </app-section-instructions>
+        </div>
 
-        <!-- Mobile Navigation Overlay -->
-        <div class="mobile-nav-overlay" *ngIf="isMobile && showMobileNav" (click)="toggleMobileNav()">
-          <div class="mobile-nav-content" (click)="$event.stopPropagation()">
-            <div class="mobile-nav-header">
-              <h3>Question Navigation</h3>
-              <button mat-icon-button (click)="toggleMobileNav()">
-                <mat-icon>close</mat-icon>
-              </button>
-            </div>
+        <!-- Questions View -->
+        <div *ngIf="examFlowState === 'questions'">
+          <!-- Navigation Sidebar -->
+          <div class="navigation-sidebar">
             <app-exam-navigation
               [questions]="questions"
               [currentQuestionIndex]="currentQuestionIndex"
@@ -148,47 +151,83 @@ import { map, filter, debounceTime } from 'rxjs/operators';
               [draftedQuestions]="draftedQuestions"
               [flaggedQuestions]="flaggedQuestions"
               [isPaused]="attempt.status === 'paused'"
-              (questionSelected)="onQuestionSelected($event); toggleMobileNav()">
+              (questionSelected)="onQuestionSelected($event)">
             </app-exam-navigation>
           </div>
-        </div>
 
-        <!-- Question Area -->
-        <div class="question-area">
-          <!-- Section Header -->
-          <div class="section-header" *ngIf="currentQuestion?.section">
-            <mat-chip class="section-chip">
-              <mat-icon>folder</mat-icon>
-              {{ currentQuestion?.section?.title }}
-            </mat-chip>
-            <span class="section-description" *ngIf="currentQuestion?.section?.description">
-              {{ currentQuestion?.section?.description }}
-            </span>
+          <!-- Mobile Floating Navigation Button -->
+          <button mat-fab color="primary" class="mobile-nav-fab" 
+                  (click)="toggleMobileNav()" 
+                  *ngIf="isMobile">
+            <mat-icon>{{ showMobileNav ? 'close' : 'list' }}</mat-icon>
+          </button>
+
+          <!-- Mobile Navigation Overlay -->
+          <div class="mobile-nav-overlay" *ngIf="isMobile && showMobileNav" (click)="toggleMobileNav()">
+            <div class="mobile-nav-content" (click)="$event.stopPropagation()">
+              <div class="mobile-nav-header">
+                <h3>Question Navigation</h3>
+                <button mat-icon-button (click)="toggleMobileNav()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+              <app-exam-navigation
+                [questions]="questions"
+                [currentQuestionIndex]="currentQuestionIndex"
+                [answeredQuestions]="answeredQuestions"
+                [draftedQuestions]="draftedQuestions"
+                [flaggedQuestions]="flaggedQuestions"
+                [isPaused]="attempt.status === 'paused'"
+                (questionSelected)="onQuestionSelected($event); toggleMobileNav()">
+              </app-exam-navigation>
+            </div>
           </div>
 
-          <app-question-view
-            [question]="currentQuestion"
-            [questionIndex]="currentQuestionIndex"
-            [answer]="getCurrentAnswer()"
-            [isFlagged]="isQuestionFlagged(currentQuestionIndex)"
-            [isPaused]="attempt.status === 'paused'"
-            (answerChanged)="onAnswerChanged($event)"
-            (answerSubmitted)="onAnswerSubmitted($event)"
-            (flagChanged)="onFlagChanged($event)">
-          </app-question-view>
+          <!-- Question Area -->
+          <div class="question-area">
+            <!-- Section Header with Instructions Link -->
+            <div class="section-header" *ngIf="currentQuestion?.section">
+              <div class="section-info">
+                <mat-chip class="section-chip">
+                  <mat-icon>folder</mat-icon>
+                  {{ currentQuestion?.section?.title }}
+                </mat-chip>
+                <span class="section-description" *ngIf="currentQuestion?.section?.description">
+                  {{ currentQuestion?.section?.description }}
+                </span>
+              </div>
+              <button mat-button (click)="onViewSectionInstructions()" 
+                      *ngIf="currentQuestion?.section?.instructions"
+                      class="instructions-button">
+                <mat-icon>info</mat-icon>
+                View Instructions
+              </button>
+            </div>
 
-          <!-- Navigation Buttons -->
-          <div class="question-navigation">
-            <button mat-button (click)="previousQuestion()" 
-                    [disabled]="currentQuestionIndex === 0 || attempt.status === 'paused'">
-              <mat-icon>chevron_left</mat-icon>
-              Previous
-            </button>
-            <button mat-raised-button color="primary" (click)="nextQuestion()" 
-                    [disabled]="currentQuestionIndex === totalQuestions - 1 || attempt.status === 'paused'">
-              Next
-              <mat-icon>chevron_right</mat-icon>
-            </button>
+            <app-question-view
+              [question]="currentQuestion"
+              [questionIndex]="currentQuestionIndex"
+              [answer]="getCurrentAnswer()"
+              [isFlagged]="isQuestionFlagged(currentQuestionIndex)"
+              [isPaused]="attempt.status === 'paused'"
+              (answerChanged)="onAnswerChanged($event)"
+              (answerSubmitted)="onAnswerSubmitted($event)"
+              (flagChanged)="onFlagChanged($event)">
+            </app-question-view>
+
+            <!-- Navigation Buttons -->
+            <div class="question-navigation">
+              <button mat-button (click)="previousQuestion()" 
+                      [disabled]="currentQuestionIndex === 0 || attempt.status === 'paused'">
+                <mat-icon>chevron_left</mat-icon>
+                Previous
+              </button>
+              <button mat-raised-button color="primary" (click)="nextQuestion()" 
+                      [disabled]="currentQuestionIndex === totalQuestions - 1 || attempt.status === 'paused'">
+                Next
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -403,6 +442,31 @@ import { map, filter, debounceTime } from 'rxjs/operators';
       border-radius: 12px; /* Branded radius */
       margin-bottom: 16px; /* Mobile-first: smaller margin */
       border-left: 4px solid var(--anarchy-blue);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .section-info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .instructions-button {
+      color: var(--anarchy-blue);
+      border: 1px solid var(--anarchy-blue);
+      border-radius: 8px;
+      font-size: 12px;
+      min-width: auto;
+      padding: 6px 12px;
+    }
+
+    .instructions-button:hover {
+      background-color: rgba(30, 58, 138, 0.1);
     }
 
     .section-chip {
@@ -760,11 +824,19 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   exam: Exam | null = null;
   attempt: ExamAttempt | null = null;
   questions: Question[] = [];
+  sections: Section[] = [];
   currentQuestionIndex = 0;
+  currentSectionIndex = 0;
   answeredQuestions = new Set<number>();
   draftedQuestions = new Set<number>();
   flaggedQuestions = new Set<number>();
   answers: Map<string, Answer> = new Map();
+  
+  // Exam flow states
+  examFlowState: 'instructions' | 'section-instructions' | 'questions' | 'completed' = 'instructions';
+  showExamInstructions = false;
+  showSectionInstructions = false;
+  
   private timeUpdateSubscription?: Subscription;
   private networkSubscription?: Subscription;
   private timerSyncSubscription?: Subscription;
@@ -829,7 +901,17 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
     this.examService.getExam(examId).subscribe({
       next: (exam) => {
         this.exam = exam;
+        this.sections = exam.sections || [];
         this.loadQuestions();
+        
+        // Set initial flow state based on whether exam has instructions
+        if (exam.instructions) {
+          this.examFlowState = 'instructions';
+        } else if (this.sections.length > 0 && this.sections[0].instructions) {
+          this.examFlowState = 'section-instructions';
+        } else {
+          this.examFlowState = 'questions';
+        }
         
         // Load attempt after questions are loaded
         this.attemptsService.getAttempt(attemptId).subscribe({
@@ -856,7 +938,18 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
     this.examService.getExam(examId).subscribe({
       next: (exam) => {
         this.exam = exam;
+        this.sections = exam.sections || [];
         this.loadQuestions();
+        
+        // Set initial flow state based on whether exam has instructions
+        if (exam.instructions) {
+          this.examFlowState = 'instructions';
+        } else if (this.sections.length > 0 && this.sections[0].instructions) {
+          this.examFlowState = 'section-instructions';
+        } else {
+          this.examFlowState = 'questions';
+        }
+        
         this.createNewAttempt(examId);
       },
       error: (error) => {
@@ -1052,17 +1145,6 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
     }, 2000); // Auto-save after 2 seconds of inactivity
   }
 
-  previousQuestion() {
-    if (this.currentQuestionIndex > 0) {
-      this.currentQuestionIndex--;
-    }
-  }
-
-  nextQuestion() {
-    if (this.currentQuestionIndex < this.totalQuestions - 1) {
-      this.currentQuestionIndex++;
-    }
-  }
 
   onTimeUp() {
     this.submitExam();
@@ -1349,5 +1431,73 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
         // Don't show error to user for timer sync failures
       }
     });
+  }
+
+  // Exam flow methods
+  onStartExam() {
+    this.examFlowState = 'section-instructions';
+    this.currentSectionIndex = 0;
+  }
+
+  onStartSection() {
+    this.examFlowState = 'questions';
+    this.loadSectionQuestions();
+  }
+
+  onBackToPreviousSection() {
+    if (this.currentSectionIndex > 0) {
+      this.currentSectionIndex--;
+      // Stay in section-instructions state to show previous section
+    }
+  }
+
+  onViewSectionInstructions() {
+    this.examFlowState = 'section-instructions';
+  }
+
+  getCurrentSection(): Section | null {
+    if (this.sections && this.sections.length > 0) {
+      return this.sections[this.currentSectionIndex] || null;
+    }
+    return null;
+  }
+
+  private loadSectionQuestions() {
+    const currentSection = this.getCurrentSection();
+    if (currentSection && currentSection.questions) {
+      this.questions = currentSection.questions;
+      this.currentQuestionIndex = 0;
+    }
+  }
+
+  // Override nextQuestion to handle section transitions
+  nextQuestion() {
+    if (this.currentQuestionIndex < this.questions.length - 1) {
+      this.currentQuestionIndex++;
+    } else {
+      // End of current section - check if there are more sections
+      if (this.currentSectionIndex < this.sections.length - 1) {
+        this.currentSectionIndex++;
+        this.examFlowState = 'section-instructions';
+      } else {
+        // End of exam
+        this.submitExam();
+      }
+    }
+  }
+
+  // Override previousQuestion to handle section transitions
+  previousQuestion() {
+    if (this.currentQuestionIndex > 0) {
+      this.currentQuestionIndex--;
+    } else {
+      // Beginning of current section - check if we can go to previous section
+      if (this.currentSectionIndex > 0) {
+        this.currentSectionIndex--;
+        this.examFlowState = 'section-instructions';
+        this.loadSectionQuestions();
+        this.currentQuestionIndex = this.questions.length - 1;
+      }
+    }
   }
 }

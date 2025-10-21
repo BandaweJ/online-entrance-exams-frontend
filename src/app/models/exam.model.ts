@@ -9,6 +9,7 @@ export interface Exam {
   totalMarks: number;
   totalQuestions: number;
   isActive: boolean;
+  instructions?: string; // General exam instructions
   createdAt: string;
   updatedAt: string;
   sections?: Section[];
@@ -23,6 +24,7 @@ export interface Section {
   id: string;
   title: string;
   description?: string;
+  instructions?: string; // Section-specific instructions (e.g., comprehension passages)
   order: number;
   totalMarks: number;
   questionCount: number;
@@ -55,6 +57,7 @@ export interface Question {
 export interface CreateExamRequest {
   title: string;
   description?: string;
+  instructions?: string; // General exam instructions
   year: number;
   examDate: string;
   durationMinutes: number;
@@ -63,6 +66,7 @@ export interface CreateExamRequest {
 export interface CreateSectionRequest {
   title: string;
   description?: string;
+  instructions?: string; // Section-specific instructions
   order: number;
 }
 
