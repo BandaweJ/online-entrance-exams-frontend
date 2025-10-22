@@ -1,12 +1,31 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, fromEvent, merge } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 export interface CheatingWarning {
   warningCount: number;
   maxWarnings: number;
   actionType: 'refresh' | 'tab_switch' | 'tab_close';
   remainingWarnings: number;
+}
+
+export interface CheatingViolation {
+  type: 'page_refresh' | 'tab_switch' | 'tab_close' | 'devtools_access' | 'right_click' | 'view_source' | 'keyboard_shortcut';
+  description: string;
+  timestamp: string;
+  userAgent?: string;
+  ipAddress?: string;
+  metadata?: any;
+}
+
+export interface CheatingWarningResponse {
+  warningCount: number;
+  maxWarnings: number;
+  remainingWarnings: number;
+  shouldAutoSubmit: boolean;
+  violations: CheatingViolation[];
 }
 
 @Injectable({
@@ -32,17 +51,27 @@ export class AntiCheatingService {
   private focusListener?: () => void;
   private blurListener?: () => void;
 
-  constructor() {
+  constructor(private http: HttpClient) {
     this.setupEventListeners();
   }
 
   /**
    * Start monitoring for cheating attempts
    */
-  startMonitoring(attemptId: string) {
+  async startMonitoring(attemptId: string) {
     this.isExamActive = true;
     this.examAttemptId = attemptId;
-    this.warningCount = 0;
+    
+    // Load existing warnings from backend
+    try {
+      const response = await this.getCheatingWarnings(attemptId).toPromise();
+      this.warningCount = response.warningCount;
+      console.log(`Loaded ${this.warningCount} existing warnings from backend`);
+    } catch (error) {
+      console.error('Error loading existing warnings:', error);
+      this.warningCount = 0;
+    }
+    
     this.setupExamEventListeners();
   }
 
@@ -192,27 +221,60 @@ export class AntiCheatingService {
     });
   }
 
-  private handleCheatingAttempt(actionType: 'refresh' | 'tab_switch' | 'tab_close') {
-    if (!this.isExamActive) return;
+  private async handleCheatingAttempt(actionType: 'refresh' | 'tab_switch' | 'tab_close') {
+    if (!this.isExamActive || !this.examAttemptId) return;
 
-    this.warningCount++;
-    
-    const warning: CheatingWarning = {
-      warningCount: this.warningCount,
-      maxWarnings: this.MAX_WARNINGS,
-      actionType: actionType,
-      remainingWarnings: this.MAX_WARNINGS - this.warningCount
-    };
+    try {
+      // Map action type to violation type
+      const violationType = this.mapActionTypeToViolationType(actionType);
+      const description = this.getViolationDescription(actionType);
 
-    console.log('Cheating attempt detected:', warning);
+      // Send violation to backend
+      const response = await this.addCheatingViolation(this.examAttemptId, {
+        type: violationType,
+        description: description,
+        metadata: {
+          userAgent: navigator.userAgent,
+          timestamp: new Date().toISOString(),
+          actionType: actionType
+        }
+      }).toPromise();
 
-    // Emit warning event
-    this.warningSubject.next(warning);
+      // Update local warning count from backend response
+      this.warningCount = response.warningCount;
 
-    // Check if exam should be auto-submitted
-    if (this.shouldAutoSubmit()) {
-      console.log('Maximum warnings reached. Auto-submitting exam...');
-      this.autoSubmitSubject.next(true);
+      const warning: CheatingWarning = {
+        warningCount: response.warningCount,
+        maxWarnings: response.maxWarnings,
+        actionType: actionType,
+        remainingWarnings: response.remainingWarnings
+      };
+
+      console.log('Cheating attempt detected and synced with backend:', warning);
+
+      // Emit warning event
+      this.warningSubject.next(warning);
+
+      // Check if exam should be auto-submitted
+      if (response.shouldAutoSubmit) {
+        console.log('Maximum warnings reached. Auto-submitting exam...');
+        this.autoSubmitSubject.next(true);
+      }
+    } catch (error) {
+      console.error('Error syncing cheating violation with backend:', error);
+      // Fallback to local tracking if backend fails
+      this.warningCount++;
+      const warning: CheatingWarning = {
+        warningCount: this.warningCount,
+        maxWarnings: this.MAX_WARNINGS,
+        actionType: actionType,
+        remainingWarnings: this.MAX_WARNINGS - this.warningCount
+      };
+      this.warningSubject.next(warning);
+      
+      if (this.shouldAutoSubmit()) {
+        this.autoSubmitSubject.next(true);
+      }
     }
   }
 
@@ -240,5 +302,33 @@ export class AntiCheatingService {
     }
     this.removeExamEventListeners();
     this.stopMonitoring();
+  }
+
+  // Helper methods
+  private mapActionTypeToViolationType(actionType: 'refresh' | 'tab_switch' | 'tab_close'): string {
+    switch (actionType) {
+      case 'refresh': return 'page_refresh';
+      case 'tab_switch': return 'tab_switch';
+      case 'tab_close': return 'tab_close';
+      default: return 'keyboard_shortcut';
+    }
+  }
+
+  private getViolationDescription(actionType: 'refresh' | 'tab_switch' | 'tab_close'): string {
+    switch (actionType) {
+      case 'refresh': return 'Attempted to refresh the page during exam';
+      case 'tab_switch': return 'Attempted to switch to another tab during exam';
+      case 'tab_close': return 'Attempted to close the browser tab during exam';
+      default: return 'Suspicious activity detected during exam';
+    }
+  }
+
+  // HTTP methods for backend synchronization
+  private addCheatingViolation(attemptId: string, violation: any) {
+    return this.http.post<CheatingWarningResponse>(`${environment.apiUrl}/attempts/${attemptId}/cheating-violation`, violation);
+  }
+
+  private getCheatingWarnings(attemptId: string) {
+    return this.http.get<CheatingWarningResponse>(`${environment.apiUrl}/attempts/${attemptId}/cheating-warnings`);
   }
 }

@@ -961,8 +961,10 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
         // Set initial flow state based on whether exam has instructions
         if (exam.instructions) {
           this.examFlowState = 'instructions';
-        } else if (this.sections.length > 0 && this.sections[0].instructions) {
+        } else if (this.sections.length > 0) {
+          // Always start with section instructions if there are sections
           this.examFlowState = 'section-instructions';
+          this.currentSectionIndex = 0;
         } else {
           this.examFlowState = 'questions';
         }
@@ -1001,8 +1003,10 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
         // Set initial flow state based on whether exam has instructions
         if (exam.instructions) {
           this.examFlowState = 'instructions';
-        } else if (this.sections.length > 0 && this.sections[0].instructions) {
+        } else if (this.sections.length > 0) {
+          // Always start with section instructions if there are sections
           this.examFlowState = 'section-instructions';
+          this.currentSectionIndex = 0;
         } else {
           this.examFlowState = 'questions';
         }
@@ -1069,18 +1073,14 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   }
 
   private loadQuestions() {
+    // Don't load all questions at once - load them per section
+    // This method is called during exam initialization
     if (this.exam?.sections) {
-      this.questions = [];
-      this.exam.sections.forEach(section => {
-        if (section.questions) {
-          // Add section reference to each question
-          const questionsWithSection = section.questions.map(q => ({
-            ...q,
-            section: section
-          }));
-          this.questions.push(...questionsWithSection);
-        }
-      });
+      this.sections = this.exam.sections;
+      // Load questions for the first section if we're in questions state
+      if (this.examFlowState === 'questions') {
+        this.loadSectionQuestions();
+      }
     }
   }
 
@@ -1553,11 +1553,13 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   onStartExam() {
     this.examFlowState = 'section-instructions';
     this.currentSectionIndex = 0;
+    console.log('Starting exam - moving to first section instructions');
   }
 
   onStartSection() {
     this.examFlowState = 'questions';
     this.loadSectionQuestions();
+    console.log(`Starting section ${this.currentSectionIndex + 1}: ${this.getCurrentSection()?.title}`);
   }
 
   onBackToPreviousSection() {
@@ -1581,7 +1583,16 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   private loadSectionQuestions() {
     const currentSection = this.getCurrentSection();
     if (currentSection && currentSection.questions) {
-      this.questions = currentSection.questions;
+      // Load questions for the current section and add section reference
+      this.questions = currentSection.questions.map(q => ({
+        ...q,
+        section: currentSection
+      }));
+      this.currentQuestionIndex = 0;
+      
+      console.log(`Loaded ${this.questions.length} questions for section: ${currentSection.title}`);
+    } else {
+      this.questions = [];
       this.currentQuestionIndex = 0;
     }
   }
@@ -1589,14 +1600,18 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   // Override nextQuestion to handle section transitions
   nextQuestion() {
     if (this.currentQuestionIndex < this.questions.length - 1) {
+      // Move to next question in current section
       this.currentQuestionIndex++;
     } else {
       // End of current section - check if there are more sections
       if (this.currentSectionIndex < this.sections.length - 1) {
+        // Move to next section
         this.currentSectionIndex++;
         this.examFlowState = 'section-instructions';
+        console.log(`Moving to section ${this.currentSectionIndex + 1}: ${this.getCurrentSection()?.title}`);
       } else {
-        // End of exam
+        // End of exam - all sections completed
+        console.log('All sections completed. Submitting exam...');
         this.submitExam();
       }
     }
@@ -1605,14 +1620,17 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   // Override previousQuestion to handle section transitions
   previousQuestion() {
     if (this.currentQuestionIndex > 0) {
+      // Move to previous question in current section
       this.currentQuestionIndex--;
     } else {
       // Beginning of current section - check if we can go to previous section
       if (this.currentSectionIndex > 0) {
+        // Move to previous section
         this.currentSectionIndex--;
         this.examFlowState = 'section-instructions';
         this.loadSectionQuestions();
         this.currentQuestionIndex = this.questions.length - 1;
+        console.log(`Moved to previous section ${this.currentSectionIndex + 1}: ${this.getCurrentSection()?.title}`);
       }
     }
   }
