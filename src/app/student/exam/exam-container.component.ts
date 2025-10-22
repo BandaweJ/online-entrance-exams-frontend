@@ -244,6 +244,15 @@ import { map, filter, debounceTime } from 'rxjs/operators';
                 <mat-icon>chevron_right</mat-icon>
               </button>
             </div>
+            
+            <!-- Debug Info (remove in production) -->
+            <div class="debug-info" style="margin-top: 10px; padding: 10px; background: #f5f5f5; font-size: 12px;">
+              <div>Debug: currentQuestionIndex={{ currentQuestionIndex }}, questions.length={{ questions.length }}</div>
+              <div>currentSectionIndex={{ currentSectionIndex }}, sections.length={{ sections.length }}</div>
+              <div>isAtEndOfExam()={{ isAtEndOfExam() }}, attempt.status={{ attempt?.status }}, isTimeUp={{ isTimeUp }}</div>
+              <div>Previous disabled: {{ currentQuestionIndex === 0 || attempt?.status === 'paused' || isTimeUp }}</div>
+              <div>Next disabled: {{ isAtEndOfExam() || attempt?.status === 'paused' || isTimeUp }}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1704,8 +1713,19 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
 
   isAtEndOfExam(): boolean {
     // Check if we're at the last question of the last section
-    return this.currentQuestionIndex === this.questions.length - 1 && 
-           this.currentSectionIndex === this.sections.length - 1;
+    // Also ensure we have questions loaded
+    if (this.questions.length === 0) {
+      console.log('isAtEndOfExam: No questions loaded, returning false');
+      return false; // Can't be at end if no questions loaded
+    }
+    
+    const isAtLastQuestion = this.currentQuestionIndex === this.questions.length - 1;
+    const isAtLastSection = this.currentSectionIndex === this.sections.length - 1;
+    const result = isAtLastQuestion && isAtLastSection;
+    
+    console.log(`isAtEndOfExam: currentQuestionIndex=${this.currentQuestionIndex}, questions.length=${this.questions.length}, currentSectionIndex=${this.currentSectionIndex}, sections.length=${this.sections.length}, result=${result}`);
+    
+    return result;
   }
 
   getCurrentSection(): Section | null {
