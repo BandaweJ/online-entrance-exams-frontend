@@ -75,7 +75,9 @@
 }
 
 /* Brand Typography */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+/* Typography - Using system fonts for better performance */
+/* Inter fallback: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif */
+/* Playfair Display fallback: Georgia, 'Times New Roman', serif */
 
 /* Glassmorphism Utility Classes */
 .glass-effect {
@@ -143,7 +145,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', 'Roboto', sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: linear-gradient(135deg, var(--anarchy-off-white) 0%, #E5E7EB 100%);
   line-height: 1.6;
   color: var(--anarchy-grey-dark);
@@ -160,13 +162,13 @@ body {
 
 /* Brand Typography */
 .brand-heading {
-  font-family: 'Playfair Display', serif;
+  font-family: Georgia, 'Times New Roman', serif;
   font-weight: 600;
   color: var(--anarchy-blue);
 }
 
 .brand-subheading {
-  font-family: 'Inter', sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 500;
   color: var(--anarchy-grey);
 }

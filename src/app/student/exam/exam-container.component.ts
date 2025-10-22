@@ -45,7 +45,8 @@ import { map, filter, debounceTime } from 'rxjs/operators';
     QuestionViewComponent,
     ExamInstructionsComponent,
     SectionInstructionsComponent,
-    SchoolLogoComponent
+    SchoolLogoComponent,
+    CheatingWarningDialogComponent // Used dynamically via MatDialog
   ],
   template: `
     <div class="exam-container" *ngIf="exam && attempt; else loading">
