@@ -65,8 +65,13 @@ export class AntiCheatingService {
     // Load existing warnings from backend
     try {
       const response = await this.getCheatingWarnings(attemptId).toPromise();
-      this.warningCount = response.warningCount;
-      console.log(`Loaded ${this.warningCount} existing warnings from backend`);
+      if (response) {
+        this.warningCount = response.warningCount;
+        console.log(`Loaded ${this.warningCount} existing warnings from backend`);
+      } else {
+        this.warningCount = 0;
+        console.log('No existing warnings found, starting fresh');
+      }
     } catch (error) {
       console.error('Error loading existing warnings:', error);
       this.warningCount = 0;
@@ -240,25 +245,29 @@ export class AntiCheatingService {
         }
       }).toPromise();
 
-      // Update local warning count from backend response
-      this.warningCount = response.warningCount;
+      if (response) {
+        // Update local warning count from backend response
+        this.warningCount = response.warningCount;
 
-      const warning: CheatingWarning = {
-        warningCount: response.warningCount,
-        maxWarnings: response.maxWarnings,
-        actionType: actionType,
-        remainingWarnings: response.remainingWarnings
-      };
+        const warning: CheatingWarning = {
+          warningCount: response.warningCount,
+          maxWarnings: response.maxWarnings,
+          actionType: actionType,
+          remainingWarnings: response.remainingWarnings
+        };
 
-      console.log('Cheating attempt detected and synced with backend:', warning);
+        console.log('Cheating attempt detected and synced with backend:', warning);
 
-      // Emit warning event
-      this.warningSubject.next(warning);
+        // Emit warning event
+        this.warningSubject.next(warning);
 
-      // Check if exam should be auto-submitted
-      if (response.shouldAutoSubmit) {
-        console.log('Maximum warnings reached. Auto-submitting exam...');
-        this.autoSubmitSubject.next(true);
+        // Check if exam should be auto-submitted
+        if (response.shouldAutoSubmit) {
+          console.log('Maximum warnings reached. Auto-submitting exam...');
+          this.autoSubmitSubject.next(true);
+        }
+      } else {
+        throw new Error('No response from backend');
       }
     } catch (error) {
       console.error('Error syncing cheating violation with backend:', error);

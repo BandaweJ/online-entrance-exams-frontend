@@ -45,8 +45,7 @@ import { map, filter, debounceTime } from 'rxjs/operators';
     QuestionViewComponent,
     ExamInstructionsComponent,
     SectionInstructionsComponent,
-    SchoolLogoComponent,
-    CheatingWarningDialogComponent
+    SchoolLogoComponent
   ],
   template: `
     <div class="exam-container" *ngIf="exam && attempt; else loading">
