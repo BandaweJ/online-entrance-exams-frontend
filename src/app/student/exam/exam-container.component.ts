@@ -211,6 +211,18 @@ import { map, filter, debounceTime } from 'rxjs/operators';
                 <span class="section-description" *ngIf="currentQuestion?.section?.description">
                   {{ currentQuestion?.section?.description }}
                 </span>
+                <!-- Section Progress -->
+                <div class="section-progress">
+                  <span class="progress-text">
+                    Section {{ getSectionProgress().current }} of {{ getSectionProgress().total }}
+                    ({{ getQuestionProgress().current }}/{{ getQuestionProgress().total }} questions)
+                  </span>
+                  <mat-progress-bar 
+                    mode="determinate" 
+                    [value]="getQuestionProgress().percentage"
+                    class="question-progress-bar">
+                  </mat-progress-bar>
+                </div>
               </div>
               <button mat-button (click)="onViewSectionInstructions()" 
                       *ngIf="currentQuestion?.section?.instructions"
@@ -234,25 +246,31 @@ import { map, filter, debounceTime } from 'rxjs/operators';
             <!-- Navigation Buttons -->
             <div class="question-navigation">
               <button mat-button (click)="previousQuestion()" 
-                      [disabled]="!canGoPrevious() || attempt.status === 'paused' || isTimeUp">
+                      [disabled]="!canGoPrevious() || attempt.status === 'paused' || isTimeUp"
+                      class="nav-button previous-button">
                 <mat-icon>chevron_left</mat-icon>
-                Previous
+                <span *ngIf="currentQuestionIndex > 0">Previous Question</span>
+                <span *ngIf="currentQuestionIndex === 0 && currentSectionIndex > 0">Previous Section</span>
+                <span *ngIf="currentQuestionIndex === 0 && currentSectionIndex === 0">Previous</span>
               </button>
+              
+              <div class="nav-info">
+                <span class="question-counter">
+                  Question {{ currentQuestionIndex + 1 }} of {{ questions.length }}
+                </span>
+                <span class="section-counter" *ngIf="sections.length > 1">
+                  Section {{ currentSectionIndex + 1 }} of {{ sections.length }}
+                </span>
+              </div>
+              
               <button mat-raised-button color="primary" (click)="nextQuestion()" 
-                      [disabled]="!canGoNext() || attempt.status === 'paused' || isTimeUp">
-                {{ getNextButtonText() }}
+                      [disabled]="!canGoNext() || attempt.status === 'paused' || isTimeUp"
+                      class="nav-button next-button">
+                <span *ngIf="!isAtEndOfExam() && currentQuestionIndex < questions.length - 1">Next Question</span>
+                <span *ngIf="!isAtEndOfExam() && currentQuestionIndex === questions.length - 1">Next Section</span>
+                <span *ngIf="isAtEndOfExam()">Submit Exam</span>
                 <mat-icon>chevron_right</mat-icon>
               </button>
-            </div>
-            
-            <!-- Debug Info (remove in production) -->
-            <div class="debug-info" style="margin-top: 10px; padding: 10px; background: #f5f5f5; font-size: 12px;">
-              <div>Debug: currentQuestionIndex={{ currentQuestionIndex }}, questions.length={{ questions.length }}</div>
-              <div>currentSectionIndex={{ currentSectionIndex }}, sections.length={{ sections.length }}</div>
-              <div>isAtEndOfExam()={{ isAtEndOfExam() }}, attempt.status={{ attempt?.status }}, isTimeUp={{ isTimeUp }}</div>
-              <div>canGoPrevious()={{ canGoPrevious() }}, canGoNext()={{ canGoNext() }}</div>
-              <div>Previous disabled: {{ !canGoPrevious() || attempt?.status === 'paused' || isTimeUp }}</div>
-              <div>Next disabled: {{ !canGoNext() || attempt?.status === 'paused' || isTimeUp }}</div>
             </div>
           </div>
         </div>
@@ -588,17 +606,58 @@ import { map, filter, debounceTime } from 'rxjs/operators';
     .question-navigation {
       display: flex;
       flex-direction: column; /* Mobile-first: stacked layout */
-      gap: 10px; /* Mobile-first: smaller gap */
+      gap: 12px; /* Mobile-first: smaller gap */
       margin-top: 20px; /* Mobile-first: smaller margin */
       padding-top: 16px; /* Mobile-first: smaller padding */
       border-top: 1px solid rgba(255, 255, 255, 0.2);
     }
 
-    .question-navigation button {
+    .nav-button {
       width: 100%; /* Mobile-first: full width */
       height: 44px; /* Mobile-first: smaller height */
       font-size: 14px; /* Mobile-first: smaller font */
       border-radius: 12px; /* Branded radius */
+      transition: all 0.3s ease;
+    }
+
+    .nav-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .nav-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      margin: 8px 0;
+    }
+
+    .question-counter, .section-counter {
+      font-size: 12px;
+      color: var(--anarchy-grey);
+      font-weight: 500;
+    }
+
+    .section-counter {
+      opacity: 0.8;
+    }
+
+    .section-progress {
+      margin-top: 8px;
+      width: 100%;
+    }
+
+    .progress-text {
+      font-size: 11px;
+      color: var(--anarchy-grey);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .question-progress-bar {
+      height: 4px;
+      border-radius: 2px;
     }
 
     .loading-container {
@@ -720,11 +779,28 @@ import { map, filter, debounceTime } from 'rxjs/operators';
         padding-top: 20px;
       }
 
-      .question-navigation button {
+      .question-navigation {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .nav-button {
         width: auto;
-        min-width: 120px;
+        min-width: 140px;
         height: 48px;
         font-size: 16px;
+      }
+
+      .nav-info {
+        flex-direction: row;
+        gap: 16px;
+        margin: 0;
+      }
+
+      .question-counter, .section-counter {
+        font-size: 14px;
       }
 
       .paused-content {
@@ -828,9 +904,16 @@ import { map, filter, debounceTime } from 'rxjs/operators';
         padding-top: 20px;
       }
 
-      .question-navigation button {
+      .nav-button {
         width: auto;
-        min-width: 120px;
+        min-width: 140px;
+        height: 48px;
+        font-size: 16px;
+      }
+
+      .nav-info {
+        flex-direction: row;
+        gap: 16px;
       }
     }
 
@@ -1716,17 +1799,13 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
     // Check if we're at the last question of the last section
     // Also ensure we have questions loaded
     if (this.questions.length === 0) {
-      console.log('isAtEndOfExam: No questions loaded, returning false');
       return false; // Can't be at end if no questions loaded
     }
     
     const isAtLastQuestion = this.currentQuestionIndex === this.questions.length - 1;
     const isAtLastSection = this.currentSectionIndex === this.sections.length - 1;
-    const result = isAtLastQuestion && isAtLastSection;
     
-    console.log(`isAtEndOfExam: currentQuestionIndex=${this.currentQuestionIndex}, questions.length=${this.questions.length}, currentSectionIndex=${this.currentSectionIndex}, sections.length=${this.sections.length}, result=${result}`);
-    
-    return result;
+    return isAtLastQuestion && isAtLastSection;
   }
 
   canGoPrevious(): boolean {
@@ -1768,7 +1847,6 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
       }));
       this.currentQuestionIndex = 0;
       
-      console.log(`Loaded ${this.questions.length} questions for section: ${currentSection.title}`);
     } else {
       this.questions = [];
       this.currentQuestionIndex = 0;
@@ -1786,10 +1864,8 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
         // Move to next section
         this.currentSectionIndex++;
         this.examFlowState = 'section-instructions';
-        console.log(`Moving to section ${this.currentSectionIndex + 1}: ${this.getCurrentSection()?.title}`);
       } else {
         // End of exam - all sections completed
-        console.log('All sections completed. Submitting exam...');
         this.submitExam();
       }
     }
@@ -1808,8 +1884,23 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
         this.examFlowState = 'section-instructions';
         this.loadSectionQuestions();
         this.currentQuestionIndex = this.questions.length - 1;
-        console.log(`Moved to previous section ${this.currentSectionIndex + 1}: ${this.getCurrentSection()?.title}`);
       }
     }
+  }
+
+  // Get current section progress information
+  getSectionProgress(): { current: number; total: number; percentage: number } {
+    const current = this.currentSectionIndex + 1;
+    const total = this.sections.length;
+    const percentage = Math.round((current / total) * 100);
+    return { current, total, percentage };
+  }
+
+  // Get current question progress within section
+  getQuestionProgress(): { current: number; total: number; percentage: number } {
+    const current = this.currentQuestionIndex + 1;
+    const total = this.questions.length;
+    const percentage = Math.round((current / total) * 100);
+    return { current, total, percentage };
   }
 }
