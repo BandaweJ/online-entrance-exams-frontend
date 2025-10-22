@@ -22,6 +22,8 @@ import { ExamAttempt, CreateAttemptRequest } from '../../models/attempt.model';
 import { Answer } from '../../models/answer.model';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { SchoolLogoComponent } from '../../shared/components/school-logo/school-logo.component';
+import { CheatingWarningDialogComponent } from '../../shared/components/cheating-warning-dialog/cheating-warning-dialog.component';
+import { AntiCheatingService, CheatingWarning } from '../../core/services/anti-cheating.service';
 import { interval, Subscription, fromEvent, merge } from 'rxjs';
 import { map, filter, debounceTime } from 'rxjs/operators';
 
@@ -43,7 +45,8 @@ import { map, filter, debounceTime } from 'rxjs/operators';
     QuestionViewComponent,
     ExamInstructionsComponent,
     SectionInstructionsComponent,
-    SchoolLogoComponent
+    SchoolLogoComponent,
+    CheatingWarningDialogComponent
   ],
   template: `
     <div class="exam-container" *ngIf="exam && attempt; else loading">
@@ -120,7 +123,7 @@ import { map, filter, debounceTime } from 'rxjs/operators';
         <div *ngIf="examFlowState === 'instructions'">
           <app-exam-instructions
             [title]="'Exam Instructions'"
-            [instructions]="exam?.instructions || 'No specific instructions for this exam.'"
+            [instructions]="exam.instructions || 'No specific instructions for this exam.'"
             [continueButtonText]="'Start Exam'"
             (continue)="onStartExam()">
           </app-exam-instructions>
@@ -141,7 +144,7 @@ import { map, filter, debounceTime } from 'rxjs/operators';
         </div>
 
         <!-- Questions View -->
-        <div *ngIf="examFlowState === 'questions'">
+        <div *ngIf="examFlowState === 'questions'" class="questions-container">
           <!-- Navigation Sidebar -->
           <div class="navigation-sidebar">
             <app-exam-navigation
@@ -412,6 +415,13 @@ import { map, filter, debounceTime } from 'rxjs/operators';
       opacity: 0.6;
     }
 
+    .questions-container {
+      display: flex;
+      flex-direction: column; /* Mobile-first: stacked layout */
+      gap: 16px;
+      min-height: calc(100vh - 200px);
+    }
+
     .navigation-sidebar {
       width: 100%; /* Mobile-first: full width */
       background: var(--glass-card);
@@ -662,7 +672,7 @@ import { map, filter, debounceTime } from 'rxjs/operators';
       }
     }
 
-    /* Tablet and up (768px and up) */
+    /* Landscape tablets and up (768px and up) */
     @media (min-width: 768px) {
       .exam-container {
         padding: 20px;
@@ -698,8 +708,9 @@ import { map, filter, debounceTime } from 'rxjs/operators';
         gap: 12px;
       }
 
-      .exam-content {
+      .questions-container {
         flex-direction: row;
+        gap: 0;
         min-height: calc(100vh - 200px);
       }
 
@@ -709,12 +720,14 @@ import { map, filter, debounceTime } from 'rxjs/operators';
         border-right: 1px solid rgba(255, 255, 255, 0.2);
         border-bottom: none;
         padding: 24px;
+        margin: 0;
       }
 
       .question-area {
         order: 2;
-        margin: 20px;
+        margin: 0;
         padding: 24px;
+        flex: 1;
       }
 
       .question-navigation {
@@ -727,6 +740,30 @@ import { map, filter, debounceTime } from 'rxjs/operators';
       .question-navigation button {
         width: auto;
         min-width: 120px;
+      }
+    }
+
+    /* Landscape orientation for tablets */
+    @media (min-width: 768px) and (orientation: landscape) {
+      .questions-container {
+        flex-direction: row;
+        gap: 0;
+      }
+
+      .navigation-sidebar {
+        width: 280px;
+        order: 1;
+        border-right: 1px solid rgba(255, 255, 255, 0.2);
+        border-bottom: none;
+        padding: 20px;
+        margin: 0;
+      }
+
+      .question-area {
+        order: 2;
+        margin: 0;
+        padding: 20px;
+        flex: 1;
       }
     }
 
@@ -847,6 +884,10 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   isSubmitting = false;
   isMobile = false;
   showMobileNav = false;
+  
+  // Anti-cheating properties
+  private cheatingWarningSubscription?: Subscription;
+  private autoSubmitSubscription?: Subscription;
 
   constructor(
     private route: ActivatedRoute,
@@ -855,7 +896,8 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
     private attemptsService: AttemptsService,
     private answersService: AnswersService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private antiCheatingService: AntiCheatingService
   ) {}
 
   ngOnInit() {
@@ -865,6 +907,9 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
     
     // Network monitoring
     this.setupNetworkMonitoring();
+    
+    // Setup anti-cheating monitoring
+    this.setupAntiCheatingMonitoring();
     
     const examId = this.route.snapshot.paramMap.get('id');
     const attemptId = this.route.snapshot.paramMap.get('attemptId');
@@ -894,6 +939,15 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
     if (this.timerSyncSubscription) {
       this.timerSyncSubscription.unsubscribe();
     }
+    if (this.cheatingWarningSubscription) {
+      this.cheatingWarningSubscription.unsubscribe();
+    }
+    if (this.autoSubmitSubscription) {
+      this.autoSubmitSubscription.unsubscribe();
+    }
+    
+    // Stop anti-cheating monitoring
+    this.antiCheatingService.stopMonitoring();
   }
 
   private loadExamData(examId: string, attemptId: string) {
@@ -920,6 +974,9 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
             this.loadExistingAnswers();
             this.startTimeTracking();
             this.startTimerSynchronization();
+            
+            // Start anti-cheating monitoring when exam is loaded
+            this.antiCheatingService.startMonitoring(attempt.id);
           },
           error: (error) => {
             console.error('Error loading attempt:', error);
@@ -959,6 +1016,58 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
     });
   }
 
+  private setupAntiCheatingMonitoring() {
+    // Subscribe to cheating warnings
+    this.cheatingWarningSubscription = this.antiCheatingService.warning$.subscribe(
+      (warning: CheatingWarning | null) => {
+        if (warning) {
+          this.showCheatingWarningDialog(warning);
+        }
+      }
+    );
+
+    // Subscribe to auto-submit events
+    this.autoSubmitSubscription = this.antiCheatingService.autoSubmit$.subscribe(
+      (shouldAutoSubmit: boolean) => {
+        if (shouldAutoSubmit) {
+          this.handleAutoSubmit();
+        }
+      }
+    );
+  }
+
+  private showCheatingWarningDialog(warning: CheatingWarning) {
+    const dialogRef = this.dialog.open(CheatingWarningDialogComponent, {
+      data: warning,
+      disableClose: true, // Prevent closing by clicking outside
+      width: '90vw',
+      maxWidth: '500px',
+      panelClass: 'cheating-warning-dialog'
+    });
+
+    dialogRef.afterClosed().subscribe((acknowledged: boolean) => {
+      if (acknowledged) {
+        this.antiCheatingService.acknowledgeWarning();
+        this.snackBar.open(
+          `Warning acknowledged. ${warning.remainingWarnings} warnings remaining.`,
+          'Close',
+          { duration: 3000 }
+        );
+      }
+    });
+  }
+
+  private handleAutoSubmit() {
+    this.snackBar.open(
+      'Maximum warnings reached. Exam will be submitted automatically.',
+      'Close',
+      { duration: 5000, panelClass: ['error-snackbar'] }
+    );
+    
+    // Auto-submit the exam
+    this.submitExam();
+  }
+
   private loadQuestions() {
     if (this.exam?.sections) {
       this.questions = [];
@@ -990,6 +1099,10 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
           this.attempt = existingAttempt;
           this.loadExistingAnswers();
           this.startTimeTracking();
+          
+          // Start anti-cheating monitoring when resuming existing attempt
+          this.antiCheatingService.startMonitoring(existingAttempt.id);
+          
           this.snackBar.open('Resuming existing exam attempt', 'Close', { duration: 3000 });
         } else {
           // No existing attempt, create a new one
@@ -1015,6 +1128,9 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
         this.loadExistingAnswers();
         this.startTimeTracking();
         this.startTimerSynchronization();
+        
+        // Start anti-cheating monitoring when new attempt is created
+        this.antiCheatingService.startMonitoring(attempt.id);
       },
       error: (error) => {
         console.error('Error creating attempt:', error);
