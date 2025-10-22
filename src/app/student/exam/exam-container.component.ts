@@ -50,6 +50,19 @@ import { map, filter, debounceTime } from 'rxjs/operators';
   ],
   template: `
     <div class="exam-container" *ngIf="exam && attempt; else loading">
+      <!-- Time Up Overlay -->
+      <div class="time-up-overlay" *ngIf="isTimeUp">
+        <div class="time-up-content">
+          <mat-icon class="time-up-icon">timer_off</mat-icon>
+          <h2>Time's Up!</h2>
+          <p>Your exam time has expired. The exam will be automatically submitted.</p>
+          <div class="time-up-warning">
+            <mat-icon>warning</mat-icon>
+            <span>You can no longer interact with the exam content.</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Paused Overlay -->
       <div class="paused-overlay" *ngIf="attempt.status === 'paused'">
         <div class="paused-content">
@@ -88,16 +101,16 @@ import { map, filter, debounceTime } from 'rxjs/operators';
             </app-countdown-display>
           </div>
           <div class="action-buttons">
-            <button mat-button (click)="pauseExam()" *ngIf="attempt.status === 'in_progress'">
+            <button mat-button (click)="pauseExam()" *ngIf="attempt.status === 'in_progress' && !isTimeUp">
               <mat-icon>pause</mat-icon>
               Pause
             </button>
-            <button mat-button (click)="resumeExam()" *ngIf="attempt.status === 'paused'">
+            <button mat-button (click)="resumeExam()" *ngIf="attempt.status === 'paused' && !isTimeUp">
               <mat-icon>play_arrow</mat-icon>
               Resume
             </button>
             <button mat-raised-button color="warn" (click)="submitExam()" 
-                    [disabled]="attempt.status === 'paused'">
+                    [disabled]="attempt.status === 'paused' || isTimeUp">
               <mat-icon>check</mat-icon>
               Submit Exam
             </button>
@@ -212,7 +225,7 @@ import { map, filter, debounceTime } from 'rxjs/operators';
               [questionIndex]="currentQuestionIndex"
               [answer]="getCurrentAnswer()"
               [isFlagged]="isQuestionFlagged(currentQuestionIndex)"
-              [isPaused]="attempt.status === 'paused'"
+              [isPaused]="attempt.status === 'paused' || isTimeUp"
               (answerChanged)="onAnswerChanged($event)"
               (answerSubmitted)="onAnswerSubmitted($event)"
               (flagChanged)="onFlagChanged($event)">
@@ -221,13 +234,13 @@ import { map, filter, debounceTime } from 'rxjs/operators';
             <!-- Navigation Buttons -->
             <div class="question-navigation">
               <button mat-button (click)="previousQuestion()" 
-                      [disabled]="currentQuestionIndex === 0 || attempt.status === 'paused'">
+                      [disabled]="currentQuestionIndex === 0 || attempt.status === 'paused' || isTimeUp">
                 <mat-icon>chevron_left</mat-icon>
                 Previous
               </button>
               <button mat-raised-button color="primary" (click)="nextQuestion()" 
-                      [disabled]="currentQuestionIndex === totalQuestions - 1 || attempt.status === 'paused'">
-                Next
+                      [disabled]="isAtEndOfExam() || attempt.status === 'paused' || isTimeUp">
+                {{ getNextButtonText() }}
                 <mat-icon>chevron_right</mat-icon>
               </button>
             </div>
@@ -265,6 +278,74 @@ import { map, filter, debounceTime } from 'rxjs/operators';
       align-items: center;
       justify-content: center;
       z-index: 1000;
+    }
+
+    .time-up-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(244, 67, 54, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1001;
+    }
+
+    .time-up-content {
+      background: white;
+      padding: 32px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 500px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .time-up-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+      color: #f44336;
+      margin-bottom: 20px;
+    }
+
+    .time-up-content h2 {
+      margin: 0 0 16px 0;
+      color: #f44336;
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    .time-up-content p {
+      margin: 0 0 20px 0;
+      color: #333;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .time-up-warning {
+      background-color: rgba(244, 67, 54, 0.1);
+      border: 1px solid #f44336;
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .time-up-warning mat-icon {
+      color: #f44336;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .time-up-warning span {
+      color: #f44336;
+      font-weight: 500;
     }
 
     .paused-content {
@@ -888,6 +969,9 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   // Anti-cheating properties
   private cheatingWarningSubscription?: Subscription;
   private autoSubmitSubscription?: Subscription;
+  
+  // Time management
+  isTimeUp = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -1263,7 +1347,9 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
 
 
   onTimeUp() {
-    this.submitExam();
+    console.log('Time up! Auto-submitting exam...');
+    this.isTimeUp = true;
+    this.autoSubmitExam();
   }
 
   pauseExam() {
@@ -1324,6 +1410,35 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  autoSubmitExam() {
+    if (!this.attempt) return;
+
+    console.log('Auto-submitting exam due to time expiry...');
+    this.isSubmitting = true;
+    
+    // Disable all exam interactions immediately
+    this.examFlowState = 'completed';
+    
+    this.attemptsService.submitAttempt(this.attempt.id).subscribe({
+      next: () => {
+        this.attempt!.status = 'submitted';
+        this.snackBar.open('Exam automatically submitted - time expired', 'Close', { 
+          duration: 5000,
+          panelClass: ['warning-snackbar']
+        });
+        this.router.navigate(['/student/dashboard']);
+      },
+      error: (error: any) => {
+        console.error('Error auto-submitting exam:', error);
+        this.isSubmitting = false;
+        this.snackBar.open('Error submitting exam. Please try again.', 'Close', { 
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
   }
 
   submitExam() {
@@ -1571,6 +1686,26 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
 
   onViewSectionInstructions() {
     this.examFlowState = 'section-instructions';
+  }
+
+  getNextButtonText(): string {
+    if (this.isAtEndOfExam()) {
+      return 'Submit Exam';
+    }
+    
+    // Check if we're at the last question of current section but not the last section
+    if (this.currentQuestionIndex === this.questions.length - 1 && 
+        this.currentSectionIndex < this.sections.length - 1) {
+      return 'Next Section';
+    }
+    
+    return 'Next';
+  }
+
+  isAtEndOfExam(): boolean {
+    // Check if we're at the last question of the last section
+    return this.currentQuestionIndex === this.questions.length - 1 && 
+           this.currentSectionIndex === this.sections.length - 1;
   }
 
   getCurrentSection(): Section | null {
