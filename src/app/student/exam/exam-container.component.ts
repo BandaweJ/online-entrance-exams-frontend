@@ -234,12 +234,12 @@ import { map, filter, debounceTime } from 'rxjs/operators';
             <!-- Navigation Buttons -->
             <div class="question-navigation">
               <button mat-button (click)="previousQuestion()" 
-                      [disabled]="currentQuestionIndex === 0 || attempt.status === 'paused' || isTimeUp">
+                      [disabled]="!canGoPrevious() || attempt.status === 'paused' || isTimeUp">
                 <mat-icon>chevron_left</mat-icon>
                 Previous
               </button>
               <button mat-raised-button color="primary" (click)="nextQuestion()" 
-                      [disabled]="isAtEndOfExam() || attempt.status === 'paused' || isTimeUp">
+                      [disabled]="!canGoNext() || attempt.status === 'paused' || isTimeUp">
                 {{ getNextButtonText() }}
                 <mat-icon>chevron_right</mat-icon>
               </button>
@@ -250,8 +250,9 @@ import { map, filter, debounceTime } from 'rxjs/operators';
               <div>Debug: currentQuestionIndex={{ currentQuestionIndex }}, questions.length={{ questions.length }}</div>
               <div>currentSectionIndex={{ currentSectionIndex }}, sections.length={{ sections.length }}</div>
               <div>isAtEndOfExam()={{ isAtEndOfExam() }}, attempt.status={{ attempt?.status }}, isTimeUp={{ isTimeUp }}</div>
-              <div>Previous disabled: {{ currentQuestionIndex === 0 || attempt?.status === 'paused' || isTimeUp }}</div>
-              <div>Next disabled: {{ isAtEndOfExam() || attempt?.status === 'paused' || isTimeUp }}</div>
+              <div>canGoPrevious()={{ canGoPrevious() }}, canGoNext()={{ canGoNext() }}</div>
+              <div>Previous disabled: {{ !canGoPrevious() || attempt?.status === 'paused' || isTimeUp }}</div>
+              <div>Next disabled: {{ !canGoNext() || attempt?.status === 'paused' || isTimeUp }}</div>
             </div>
           </div>
         </div>
@@ -1726,6 +1727,28 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
     console.log(`isAtEndOfExam: currentQuestionIndex=${this.currentQuestionIndex}, questions.length=${this.questions.length}, currentSectionIndex=${this.currentSectionIndex}, sections.length=${this.sections.length}, result=${result}`);
     
     return result;
+  }
+
+  canGoPrevious(): boolean {
+    // Can go previous if:
+    // 1. Not at the first question of the first section, OR
+    // 2. There are previous sections to go back to
+    if (this.currentQuestionIndex > 0) {
+      return true; // Can go to previous question in current section
+    }
+    
+    // Check if we can go to previous section
+    if (this.currentSectionIndex > 0) {
+      return true; // Can go to previous section
+    }
+    
+    return false; // At the very beginning
+  }
+
+  canGoNext(): boolean {
+    // Can always go next - either to next question, next section, or submit exam
+    // The button text will indicate what action will be taken
+    return true;
   }
 
   getCurrentSection(): Section | null {
