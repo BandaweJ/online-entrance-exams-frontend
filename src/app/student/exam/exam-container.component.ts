@@ -1761,13 +1761,11 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   onStartExam() {
     this.examFlowState = 'section-instructions';
     this.currentSectionIndex = 0;
-    console.log('Starting exam - moving to first section instructions');
   }
 
   onStartSection() {
     this.examFlowState = 'questions';
     this.loadSectionQuestions();
-    console.log(`Starting section ${this.currentSectionIndex + 1}: ${this.getCurrentSection()?.title}`);
   }
 
   onBackToPreviousSection() {
