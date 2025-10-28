@@ -217,22 +217,25 @@ export class UserEditDialogComponent {
   onSave(): void {
     if (this.userForm.valid) {
       this.isSaving = true;
-      const formValue = this.userForm.value;
+      const formValue = { ...this.userForm.value };
+      
+      // Always remove confirmPassword as backend doesn't need it
+      delete formValue.confirmPassword;
       
       // Remove password fields if they're empty
       if (!formValue.password) {
         delete formValue.password;
-        delete formValue.confirmPassword;
       }
 
       this.userService.updateUser(this.data.user.id, formValue).subscribe({
         next: (updatedUser) => {
           this.snackBar.open('User updated successfully', 'Close', { duration: 3000 });
           this.dialogRef.close(updatedUser);
+          this.isSaving = false;
         },
         error: (error) => {
           console.error('Error updating user:', error);
-          this.snackBar.open('Error updating user', 'Close', { duration: 3000 });
+          this.snackBar.open(error.error?.message || 'Error updating user', 'Close', { duration: 3000 });
           this.isSaving = false;
         }
       });
