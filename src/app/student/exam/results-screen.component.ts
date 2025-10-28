@@ -9,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { ResultsService } from '../../core/services/results.service';
@@ -29,7 +30,8 @@ import { User } from '../../models/user.model';
     MatProgressSpinnerModule,
     MatTabsModule,
     MatTableModule,
-    MatDividerModule
+    MatDividerModule,
+    MatSnackBarModule
   ],
   template: `
     <div class="results-container" *ngIf="result; else loading">
@@ -40,6 +42,10 @@ import { User } from '../../models/user.model';
           <p>{{ result.exam?.title }} - {{ getExamYear(result.exam) }}</p>
         </div>
         <div class="header-actions">
+          <button mat-raised-button color="accent" (click)="downloadPdf()" [disabled]="isDownloading">
+            <mat-icon>download</mat-icon>
+            {{ isDownloading ? 'Generating...' : 'Download PDF' }}
+          </button>
           <button mat-raised-button color="primary" (click)="goToDashboard()">
             <mat-icon>dashboard</mat-icon>
             {{ getBackButtonText() }}
@@ -656,12 +662,14 @@ export class ResultsScreenComponent implements OnInit {
   result: Result | null = null;
   examStats: ExamStats | null = null;
   currentUser$: Observable<User | null>;
+  isDownloading = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private resultsService: ResultsService,
-    private store: Store<AppState>
+    private store: Store<AppState>,
+    private snackBar: MatSnackBar
   ) {
     this.currentUser$ = this.store.select(selectCurrentUser);
   }
@@ -743,5 +751,30 @@ export class ResultsScreenComponent implements OnInit {
 
   getQuestionResults(result: any): any[] {
     return result?.questionResults || [];
+  }
+
+  downloadPdf() {
+    if (!this.result?.id) return;
+    
+    this.isDownloading = true;
+    this.resultsService.exportResultPdf(this.result.id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `result-${this.result?.student?.id || this.result?.id}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        this.snackBar.open('PDF downloaded successfully!', 'Close', { duration: 3000 });
+        this.isDownloading = false;
+      },
+      error: (error) => {
+        console.error('Error downloading PDF:', error);
+        this.snackBar.open('Error downloading PDF. Please try again.', 'Close', { duration: 3000 });
+        this.isDownloading = false;
+      }
+    });
   }
 }

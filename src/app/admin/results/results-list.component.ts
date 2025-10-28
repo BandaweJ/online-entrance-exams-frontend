@@ -154,6 +154,10 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
                           <mat-icon>visibility</mat-icon>
                           View Details
                         </button>
+                        <button mat-menu-item (click)="downloadResultPdf(result.id)">
+                          <mat-icon>download</mat-icon>
+                          Download PDF
+                        </button>
                         <button mat-menu-item (click)="publishResult(result)" *ngIf="!result.isPublished">
                           <mat-icon>publish</mat-icon>
                           Publish
@@ -188,6 +192,10 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
                         <button mat-menu-item (click)="viewResult(result.id)">
                           <mat-icon>visibility</mat-icon>
                           View Details
+                        </button>
+                        <button mat-menu-item (click)="downloadResultPdf(result.id)">
+                          <mat-icon>download</mat-icon>
+                          Download PDF
                         </button>
                         <button mat-menu-item (click)="publishResult(result)" *ngIf="!result.isPublished">
                           <mat-icon>publish</mat-icon>
@@ -236,14 +244,20 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
             <div class="tab-content">
               <div class="stats-header">
                 <h2>Exam Statistics</h2>
-                <mat-form-field appearance="outline">
-                  <mat-label>Select Exam</mat-label>
-                  <mat-select [(value)]="selectedExamForStats" (selectionChange)="loadExamStats()">
-                    <mat-option *ngFor="let exam of exams" [value]="exam.id">
-                      {{ exam.title }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
+                <div class="header-actions">
+                  <button mat-raised-button color="accent" (click)="downloadExamResultsPdf()" [disabled]="!selectedExamForStats || isDownloading">
+                    <mat-icon>download</mat-icon>
+                    {{ isDownloading ? 'Generating...' : 'Export All Results' }}
+                  </button>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Select Exam</mat-label>
+                    <mat-select [(value)]="selectedExamForStats" (selectionChange)="loadExamStats()">
+                      <mat-option *ngFor="let exam of exams" [value]="exam.id">
+                        {{ exam.title }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
               </div>
 
               <div class="stats-grid" *ngIf="examStats">
@@ -447,6 +461,12 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
       justify-content: space-between;
       align-items: center;
       margin-bottom: 30px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
 
     .stats-header h2 {
@@ -686,6 +706,7 @@ export class ResultsListComponent implements OnInit {
   searchTerm = '';
   displayedColumns: string[] = ['student', 'exam', 'score', 'grade', 'rank', 'status', 'actions'];
   isLoading = false;
+  isDownloading = false;
 
   constructor(
     private resultsService: ResultsService,
@@ -804,6 +825,54 @@ export class ResultsListComponent implements OnInit {
         result.isPublished = false;
         result.publishedAt = undefined;
         this.snackBar.open('Result unpublished successfully', 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  downloadResultPdf(resultId: string) {
+    this.isDownloading = true;
+    this.resultsService.exportResultPdf(resultId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `result-${resultId}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        this.snackBar.open('PDF downloaded successfully!', 'Close', { duration: 3000 });
+        this.isDownloading = false;
+      },
+      error: (error) => {
+        console.error('Error downloading PDF:', error);
+        this.snackBar.open('Error downloading PDF. Please try again.', 'Close', { duration: 3000 });
+        this.isDownloading = false;
+      }
+    });
+  }
+
+  downloadExamResultsPdf() {
+    if (!this.selectedExamForStats) return;
+    
+    this.isDownloading = true;
+    this.resultsService.exportExamResultsPdf(this.selectedExamForStats).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `exam-results-${this.selectedExamForStats}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        this.snackBar.open('PDF downloaded successfully!', 'Close', { duration: 3000 });
+        this.isDownloading = false;
+      },
+      error: (error) => {
+        console.error('Error downloading PDF:', error);
+        this.snackBar.open('Error downloading PDF. Please try again.', 'Close', { duration: 3000 });
+        this.isDownloading = false;
       }
     });
   }

@@ -43,4 +43,22 @@ export class ResultsService {
   generateResult(attemptId: string): Observable<Result> {
     return this.http.post<Result>(`${this.API_URL}/results/generate/${attemptId}`, {});
   }
+
+  exportResultPdf(id: string): Observable<Blob> {
+    return this.http.get(`${this.API_URL}/results/${id}/export/pdf`, {
+      responseType: 'blob'
+    });
+  }
+
+  exportExamResultsPdf(examId: string): Observable<Blob> {
+    return this.http.get(`${this.API_URL}/results/exam/${examId}/export/pdf`, {
+      responseType: 'blob'
+    });
+  }
+
+  exportStudentResultsPdf(): Observable<Blob> {
+    return this.http.get(`${this.API_URL}/results/student/export/pdf`, {
+      responseType: 'blob'
+    });
+  }
 }
