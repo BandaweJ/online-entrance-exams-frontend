@@ -59,10 +59,10 @@ import { SchoolLogoComponent } from '../../shared/components/school-logo/school-
                 <mat-card *ngFor="let exam of availableExams" class="exam-card">
                   <mat-card-header>
                     <mat-card-title>{{ exam.title }}</mat-card-title>
-                    <mat-card-subtitle>{{ exam.year }} • {{ exam.durationMinutes }} minutes</mat-card-subtitle>
+                    <mat-card-subtitle>{{ exam.year }} • {{ formatDuration(exam.durationMinutes) }}</mat-card-subtitle>
                   </mat-card-header>
                   <mat-card-content>
-                    <p class="exam-description">{{ exam.description }}</p>
+                    <p class="exam-description">{{ cleanDescription(exam.description) }}</p>
                     <div class="exam-stats">
                       <span>{{ exam.totalQuestions }} questions</span>
                       <span>{{ exam.totalMarks }} marks</span>
@@ -980,6 +980,37 @@ export class StudentDashboardComponent implements OnInit {
   getProgressPercentage(attempt: ExamAttempt): number {
     if (attempt.totalQuestions === 0) return 0;
     return (attempt.questionsAnswered / attempt.totalQuestions) * 100;
+  }
+
+  formatDuration(minutes: number): string {
+    if (minutes < 60) {
+      return `${minutes} minutes`;
+    }
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    if (remainingMinutes === 0) {
+      return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+    }
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ${remainingMinutes} ${remainingMinutes === 1 ? 'minute' : 'minutes'}`;
+  }
+
+  cleanDescription(description: string | undefined): string {
+    if (!description) return '';
+    
+    // Remove time-related patterns that might conflict with the actual duration
+    // Patterns like "Time: 2 hours 30 minutes", "2 hrs 30 mins", "120 minutes", etc.
+    let cleaned = description
+      .replace(/Time:\s*\d+\s*(hours?|hrs?|h)\s*\d+\s*(minutes?|mins?|m)/gi, '')
+      .replace(/Time:\s*\d+\s*(hours?|hrs?|h)/gi, '')
+      .replace(/Time:\s*\d+\s*(minutes?|mins?|m)/gi, '')
+      .replace(/\d+\s*(hours?|hrs?|h)\s*\d+\s*(minutes?|mins?|m)/gi, '')
+      .replace(/\d+\s*(hours?|hrs?|h)/gi, '')
+      .trim();
+    
+    // Clean up any double spaces or leading/trailing punctuation
+    cleaned = cleaned.replace(/\s+/g, ' ').replace(/^[,\s]+|[,\s]+$/g, '');
+    
+    return cleaned || description; // Return original if cleaning removed everything
   }
 
   formatTime(seconds: number): string {
