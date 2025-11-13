@@ -66,7 +66,7 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
                 <td mat-cell *matCellDef="let exam">
                   <div class="exam-title">
                     <h3>{{ exam.title }}</h3>
-                    <p class="exam-description">{{ exam.description }}</p>
+                    <p class="exam-description">{{ cleanDescription(exam.description) }}</p>
                   </div>
                 </td>
               </ng-container>
@@ -89,7 +89,7 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
               <ng-container matColumnDef="duration">
                 <th mat-header-cell *matHeaderCellDef>Duration</th>
                 <td mat-cell *matCellDef="let exam">
-                  {{ exam.durationMinutes }} min
+                  {{ formatDuration(exam.durationMinutes) }}
                 </td>
               </ng-container>
 
@@ -165,7 +165,7 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
                 <div class="exam-card-header">
                   <div class="exam-info">
                     <h3>{{ exam.title }}</h3>
-                    <p class="exam-description">{{ exam.description }}</p>
+                    <p class="exam-description">{{ cleanDescription(exam.description) }}</p>
                   </div>
                   <button mat-icon-button [matMenuTriggerFor]="mobileMenu">
                     <mat-icon>more_vert</mat-icon>
@@ -212,7 +212,7 @@ import * as ExamActions from '../../core/store/exam/exam.actions';
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">Duration:</span>
-                    <span>{{ exam.durationMinutes }} min</span>
+                    <span>{{ formatDuration(exam.durationMinutes) }}</span>
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">Status:</span>
@@ -595,6 +595,37 @@ export class ExamsListComponent implements OnInit, OnDestroy {
 
   getStatusClass(status: string): string {
     return `status-${status}`;
+  }
+
+  formatDuration(minutes: number): string {
+    if (minutes < 60) {
+      return `${minutes} minutes`;
+    }
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    if (remainingMinutes === 0) {
+      return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+    }
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ${remainingMinutes} ${remainingMinutes === 1 ? 'minute' : 'minutes'}`;
+  }
+
+  cleanDescription(description: string | undefined): string {
+    if (!description) return '';
+    
+    // Remove time-related patterns that might conflict with the actual duration
+    // Patterns like "Time: 2 hours 30 minutes", "2 hrs 30 mins", "120 minutes", etc.
+    let cleaned = description
+      .replace(/Time:\s*\d+\s*(hours?|hrs?|h)\s*\d+\s*(minutes?|mins?|m)/gi, '')
+      .replace(/Time:\s*\d+\s*(hours?|hrs?|h)/gi, '')
+      .replace(/Time:\s*\d+\s*(minutes?|mins?|m)/gi, '')
+      .replace(/\d+\s*(hours?|hrs?|h)\s*\d+\s*(minutes?|mins?|m)/gi, '')
+      .replace(/\d+\s*(hours?|hrs?|h)/gi, '')
+      .trim();
+    
+    // Clean up any double spaces or leading/trailing punctuation
+    cleaned = cleaned.replace(/\s+/g, ' ').replace(/^[,\s]+|[,\s]+$/g, '');
+    
+    return cleaned || description; // Return original if cleaning removed everything
   }
 
   viewExam(id: string) {

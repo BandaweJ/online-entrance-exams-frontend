@@ -37,7 +37,7 @@ export interface ExamRulesDialogData {
           <div class="exam-details">
             <div class="detail-item">
               <mat-icon>schedule</mat-icon>
-              <span>{{ data.durationMinutes }} minutes</span>
+              <span>{{ formatDuration(data.durationMinutes) }}</span>
             </div>
             <div class="detail-item">
               <mat-icon>quiz</mat-icon>
@@ -55,7 +55,7 @@ export interface ExamRulesDialogData {
           <ul class="rules-list">
             <li>
               <mat-icon>timer</mat-icon>
-              <span>You have <strong>{{ data.durationMinutes }} minutes</strong> to complete this exam</span>
+              <span>You have <strong>{{ formatDuration(data.durationMinutes) }}</strong> to complete this exam</span>
             </li>
             <li>
               <mat-icon>pause</mat-icon>
@@ -253,6 +253,18 @@ export class ExamRulesDialogComponent {
     public dialogRef: MatDialogRef<ExamRulesDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ExamRulesDialogData
   ) {}
+
+  formatDuration(minutes: number): string {
+    if (minutes < 60) {
+      return `${minutes} minutes`;
+    }
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    if (remainingMinutes === 0) {
+      return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+    }
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ${remainingMinutes} ${remainingMinutes === 1 ? 'minute' : 'minutes'}`;
+  }
 
   onCancel(): void {
     this.dialogRef.close(false);

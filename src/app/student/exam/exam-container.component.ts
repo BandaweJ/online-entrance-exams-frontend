@@ -87,7 +87,17 @@ import { map, filter, debounceTime } from 'rxjs/operators';
             <app-school-logo size="small"></app-school-logo>
             <div class="exam-details">
               <h1>{{ exam.title }}</h1>
-              <p>{{ exam.description }}</p>
+              <p>{{ cleanDescription(exam.description) }}</p>
+              <div class="exam-meta" *ngIf="exam.durationMinutes || exam.totalMarks">
+                <span *ngIf="exam.durationMinutes" class="meta-item">
+                  <mat-icon>schedule</mat-icon>
+                  Duration: {{ formatDuration(exam.durationMinutes) }}
+                </span>
+                <span *ngIf="exam.totalMarks" class="meta-item">
+                  <mat-icon>star</mat-icon>
+                  Total Marks: {{ exam.totalMarks }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -463,11 +473,34 @@ import { map, filter, debounceTime } from 'rxjs/operators';
     }
 
     .exam-details p {
-      margin: 0;
+      margin: 0 0 8px 0;
       font-family: 'Inter', sans-serif;
       color: var(--anarchy-grey);
       font-size: 0.875rem; /* Mobile-first: smaller font */
       line-height: 1.3;
+    }
+
+    .exam-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--anarchy-grey);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .meta-item mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: var(--anarchy-blue);
     }
 
     .exam-controls {
@@ -715,6 +748,16 @@ import { map, filter, debounceTime } from 'rxjs/operators';
 
       .exam-details p {
         font-size: 0.9rem;
+      }
+
+      .exam-meta {
+        flex-direction: row;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .meta-item {
+        font-size: 0.875rem;
       }
 
       .exam-controls {
@@ -1396,6 +1439,48 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   getProgressPercentage(): number {
     if (this.totalQuestions === 0) return 0;
     return Math.round(((this.currentQuestionIndex + 1) / this.totalQuestions) * 100);
+  }
+
+  formatDuration(minutes: number): string {
+    if (minutes < 60) {
+      return `${minutes} minutes`;
+    }
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    if (remainingMinutes === 0) {
+      return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+    }
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ${remainingMinutes} ${remainingMinutes === 1 ? 'minute' : 'minutes'}`;
+  }
+
+  cleanDescription(description: string | undefined): string {
+    if (!description) return '';
+    
+    // Remove time-related patterns that might conflict with the actual duration
+    // Patterns like "Time: 2 hours 30 minutes", "2 hrs 30 mins", "120 minutes", etc.
+    // More aggressive pattern matching to catch all variations
+    let cleaned = description
+      // Remove "Time: X hours Y minutes" patterns (with various spacing and formats)
+      .replace(/Time:\s*\d+\s*(hours?|hrs?|h)\s*\d+\s*(minutes?|mins?|m)/gi, '')
+      .replace(/Time:\s*\d+\s*(hours?|hrs?|h)/gi, '')
+      .replace(/Time:\s*\d+\s*(minutes?|mins?|m)/gi, '')
+      // Remove standalone time patterns
+      .replace(/\d+\s*(hours?|hrs?|h)\s*\d+\s*(minutes?|mins?|m)/gi, '')
+      .replace(/\d+\s*(hours?|hrs?|h)/gi, '')
+      // Remove "Total Marks: X" if it appears (we'll show it separately)
+      .replace(/Total\s*Marks?:\s*\d+/gi, '')
+      // Remove any remaining "Time:" references
+      .replace(/Time:\s*/gi, '')
+      .trim();
+    
+    // Clean up any double spaces, commas, or leading/trailing punctuation
+    cleaned = cleaned
+      .replace(/\s+/g, ' ')
+      .replace(/^[,\s|]+|[,\s|]+$/g, '')
+      .replace(/\|\s*\|/g, '|') // Clean up double pipes
+      .trim();
+    
+    return cleaned || description; // Return original if cleaning removed everything
   }
 
   onQuestionSelected(index: number) {
