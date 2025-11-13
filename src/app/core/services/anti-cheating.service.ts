@@ -246,25 +246,32 @@ export class AntiCheatingService {
       }).toPromise();
 
       if (response) {
-        // Update local warning count from backend response
-        this.warningCount = response.warningCount;
+        // Cap warning count at MAX_WARNINGS to prevent exceeding limit
+        const cappedWarningCount = Math.min(response.warningCount, this.MAX_WARNINGS);
+        const cappedRemainingWarnings = Math.max(0, this.MAX_WARNINGS - cappedWarningCount);
+        
+        // Update local warning count from backend response (capped)
+        this.warningCount = cappedWarningCount;
 
         const warning: CheatingWarning = {
-          warningCount: response.warningCount,
-          maxWarnings: response.maxWarnings,
+          warningCount: cappedWarningCount,
+          maxWarnings: this.MAX_WARNINGS,
           actionType: actionType,
-          remainingWarnings: response.remainingWarnings
+          remainingWarnings: cappedRemainingWarnings
         };
 
         console.log('Cheating attempt detected and synced with backend:', warning);
 
-        // Emit warning event
-        this.warningSubject.next(warning);
-
-        // Check if exam should be auto-submitted
-        if (response.shouldAutoSubmit) {
+        // Check if exam should be auto-submitted (either from backend or if count exceeds limit)
+        const shouldAutoSubmit = response.shouldAutoSubmit || cappedWarningCount >= this.MAX_WARNINGS;
+        
+        if (shouldAutoSubmit) {
           console.log('Maximum warnings reached. Auto-submitting exam...');
+          // Emit auto-submit first, then warning (so auto-submit can close the dialog)
           this.autoSubmitSubject.next(true);
+        } else {
+          // Only emit warning if not auto-submitting
+          this.warningSubject.next(warning);
         }
       } else {
         throw new Error('No response from backend');
@@ -272,17 +279,23 @@ export class AntiCheatingService {
     } catch (error) {
       console.error('Error syncing cheating violation with backend:', error);
       // Fallback to local tracking if backend fails
-      this.warningCount++;
+      // Cap warning count at MAX_WARNINGS
+      this.warningCount = Math.min(this.warningCount + 1, this.MAX_WARNINGS);
+      const remainingWarnings = Math.max(0, this.MAX_WARNINGS - this.warningCount);
+      
       const warning: CheatingWarning = {
         warningCount: this.warningCount,
         maxWarnings: this.MAX_WARNINGS,
         actionType: actionType,
-        remainingWarnings: this.MAX_WARNINGS - this.warningCount
+        remainingWarnings: remainingWarnings
       };
-      this.warningSubject.next(warning);
       
+      // Check if should auto-submit
       if (this.shouldAutoSubmit()) {
+        console.log('Maximum warnings reached (fallback). Auto-submitting exam...');
         this.autoSubmitSubject.next(true);
+      } else {
+        this.warningSubject.next(warning);
       }
     }
   }

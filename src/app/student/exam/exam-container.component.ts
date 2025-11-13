@@ -1105,6 +1105,7 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   // Anti-cheating properties
   private cheatingWarningSubscription?: Subscription;
   private autoSubmitSubscription?: Subscription;
+  private currentWarningDialogRef?: any; // Track open warning dialog
   
   // Time management
   isTimeUp = false;
@@ -1164,6 +1165,11 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
     }
     if (this.autoSubmitSubscription) {
       this.autoSubmitSubscription.unsubscribe();
+    }
+    // Close any open warning dialog
+    if (this.currentWarningDialogRef) {
+      this.currentWarningDialogRef.close();
+      this.currentWarningDialogRef = null;
     }
     
     // Stop anti-cheating monitoring
@@ -1261,35 +1267,80 @@ export class ExamContainerComponent implements OnInit, OnDestroy {
   }
 
   private showCheatingWarningDialog(warning: CheatingWarning) {
+    // Cap warning count at maxWarnings (3)
+    const cappedWarningCount = Math.min(warning.warningCount, warning.maxWarnings);
+    const cappedRemainingWarnings = Math.max(0, warning.maxWarnings - cappedWarningCount);
+    
+    // Close any existing warning dialog before opening a new one
+    if (this.currentWarningDialogRef) {
+      this.currentWarningDialogRef.close();
+      this.currentWarningDialogRef = null;
+    }
+
+    // If warnings exceeded the limit, trigger auto-submit immediately
+    if (warning.warningCount > warning.maxWarnings) {
+      console.warn(`Warning count (${warning.warningCount}) exceeded maximum (${warning.maxWarnings}). Auto-submitting exam.`);
+      this.handleAutoSubmit();
+      return;
+    }
+
+    // Create warning data with capped values
+    const cappedWarning: CheatingWarning = {
+      ...warning,
+      warningCount: cappedWarningCount,
+      remainingWarnings: cappedRemainingWarnings
+    };
+
     const dialogRef = this.dialog.open(CheatingWarningDialogComponent, {
-      data: warning,
+      data: cappedWarning,
       disableClose: true, // Prevent closing by clicking outside
       width: '90vw',
       maxWidth: '500px',
       panelClass: 'cheating-warning-dialog'
     });
 
+    // Track the open dialog
+    this.currentWarningDialogRef = dialogRef;
+
     dialogRef.afterClosed().subscribe((acknowledged: boolean) => {
+      // Clear the reference when dialog closes
+      this.currentWarningDialogRef = null;
+      
       if (acknowledged) {
         this.antiCheatingService.acknowledgeWarning();
-        this.snackBar.open(
-          `Warning acknowledged. ${warning.remainingWarnings} warnings remaining.`,
-          'Close',
-          { duration: 3000 }
-        );
+        if (cappedRemainingWarnings > 0) {
+          this.snackBar.open(
+            `Warning acknowledged. ${cappedRemainingWarnings} warnings remaining.`,
+            'Close',
+            { duration: 3000 }
+          );
+        }
       }
     });
   }
 
   private handleAutoSubmit() {
+    // Close any open warning dialog
+    if (this.currentWarningDialogRef) {
+      this.currentWarningDialogRef.close();
+      this.currentWarningDialogRef = null;
+    }
+
+    // Prevent multiple auto-submits
+    if (this.isSubmitting) {
+      return;
+    }
+
     this.snackBar.open(
       'Maximum warnings reached. Exam will be submitted automatically.',
       'Close',
       { duration: 5000, panelClass: ['error-snackbar'] }
     );
     
-    // Auto-submit the exam
-    this.submitExam();
+    // Auto-submit the exam after a short delay to show the message
+    setTimeout(() => {
+      this.submitExam();
+    }, 1000);
   }
 
   private loadQuestions() {
